@@ -1,6 +1,9 @@
 # results
 *.png
 
+# R
+*.RData
+*.Rhistory
 # RStudio
 *.nb.html
 .Rproj.user
