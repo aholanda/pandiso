@@ -11,25 +11,66 @@ Try executing this chunk by clicking the *Run* button within the chunk or by pla
 WD <- getwd();
 DATA_DIR <- "data"
 file_path <- file.path(WD, DATA_DIR, "covid19-sp-BR.csv");
-coviso_data <- read.csv(file_path, header = TRUE, sep = ";");
+cov_data <- read.csv(file_path, header = TRUE, sep = ";");
 ```
 
 ```{r}
-W = 5;
-N = nrow(coviso_data)
-NW = floor(N/W);
-caws = vector("numeric", NW)
-print(length(caws))
-pi.su <- 0 # sum the number of cases
-for (nw in 1:NW) {
-  j <- nw*W
-  caws[nw] = sum(sum(coviso_data[1:j, 2]))
+# Time step in days
+W <- 5;
+# Number of rows in the data set
+N <- nrow(coviso_data)
+# Number of time steps (windows)
+NW <- floor(N/W);
+# Vectors to store the number of cases and average 
+# of isolation levels at each time step
+cases_dt <- vector("numeric", NW)
+lvels_dt <- vector("numeric", NW)
+for (i in 1:NW) {
+  k <- i*W
+  # Assign the sum the cases from rows [1,k] to ith time step
+  cases_dt[i] = sum(cov_data[1:k, 2])
+  # Assign the sum the cases from rows [j,k] to ith time step
+  j = (i-1)*W + 1
+  lvels_dt[i] = mean(cov_data[j:k, 2])
 }
-plot(caws)
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+# Fitting
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+Logistic function in the exponential form:
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+    $$𝑓(t)= {k \over 1 + ({ (k-n_m) \over n_m }) e^{−rt}}$$
+
+where:
+t is a list of values representing the time steps;
+n_m is the sigmoid's midpoint;
+K is the the maximum value for n;
+r is the the logistic growth rate.
+
+
+```{r}
+library(minpack.lm)
+temp <- data.frame(y = caws, x = seq(length(caws)))
+plot(temp$x, temp$y)
+logistic.model <- nlsLM(y ~ (k / (1 + ((k-m)/m)*exp(- r * x))), data = temp, start = list(k = 1, m=1, r = 0.1))
+ys_model <- predict(logistic.model, list(x = temp$x))
+lines(temp$x, ys_model)
+summary(logistic.model)
+cor.test(temp$y, ys_model, method=c("pearson"))
+
+```
+# Estimating
+
+```{r}
+r <-  coef(logistic.model)["r"]
+alph <- r * mean(lvels_dt)
+K <- coef(logistic.model)["k"]
+M <- coef(logistic.model)["m"]
+ys_estimated <- vector("numeric", NW)
+for (i in 1:NW) {
+  ys_estimated[i] <- K / (1 + ((K-M)/M)*exp(- r * i))
+}
+plot(temp$x, ys_estimated)
+points(temp$x, cases_dt)
+cor.test(cases_dt, ys_estimated, method=c("pearson"))
+```
