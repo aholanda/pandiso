@@ -1,6 +1,13 @@
 # results
 *.png
 
+# RStudio
+*.nb.html
+.Rproj.user
+
 # Python
 __pycache__
 *.pyc
+
+# Temp files
+*~
