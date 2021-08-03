@@ -18,16 +18,45 @@ out <- ode(func=df.logistic, y=y_initial,
            times=times, parms=ode_parms)
 plot(out, xlab="t", ylab="y", main="Logistic function")
 ```
+# Data
+
+The accumulated number of cases and the average of isolation level for all 
+cities in the São Paulo State were stored in a file called "covid19-sp-BR.csv".
+ The first and the last rows correspond to the timeline used in the study.
+
+A row in the CSV file looks like this:
+
+```{}
+20200421;805;0.5810548129496403
+```
+
+The fields are separated by semicolon ";" with the first column representing 
+the date in the format YYYYMMDD (Y - year characters, M - month characters, D - day characters),
+the second column represent the number of cases on that day and the third the isolation level 
+assessed during the day.
+
 
 ```{r}
+# Current directory
 WD <- getwd();
-DATA_DIR <- "data"
-file_path <- file.path(WD, DATA_DIR, "covid19-sp-BR.csv");
+# Data file name
+FN <- "covid19-sp-BR.csv"
+file_path <- file.path(WD, FN);
+# Read CSV file organizing the data according to columns
 cov_data <- read.csv(file_path, header = TRUE, sep = ";");
 ```
 
+The time step or window `W` is the only input needed to the method.
+ The value of `W` was adopted after a set of tests performed to 
+ check which value causes a better correlation in the curves 
+ for the model and estimated data. This high correlation means that 
+ the isolation level in that time step affects the number of cases in the 
+ next time step. The cases are summed and isolation levels 
+ are averaged in each time step `W`
+
+
 ```{r}
-# Time step in days
+# Time step in days (window)
 W <- 5;
 # Number of rows in the data set
 N <- nrow(cov_data)
@@ -51,13 +80,17 @@ for (i in 1:NW) {
 
 Logistic function in the exponential form:
 
-    $$𝑓(t)= {k \over 1 + ({ (k-n_m) \over n_m }) e^{−rt}}$$
+$$𝑓(t)= {K \over 1 + ({ K-m \over m }) e^{−rt}}$$
+
 
 where:
 t is a list of values representing the time steps;
 n_m is the sigmoid's midpoint;
 K is the the maximum value for n;
 r is the the logistic growth rate.
+
+The logistic function is used to fit the number of cases and the 
+fitting parameters are used in the estimation phase.
 
 
 ```{r}
@@ -78,6 +111,26 @@ cor.test(temp$y, ys_model, method=c("pearson"))
 ```
 # Estimating
 
+The estimation is performed after the calculation of $\lambda$
+ is done by:
+ 
+ $$\lambda = r_{fit} \overline{i\ },$$
+where $r_{fit}$ is the logistic growth factor obtained from 
+fitting and $\overline{i }$ is the average of all isolation 
+level values.
+
+The $\lambda$ value is used to estimate the number of cases 
+$n(t+dt)$ using the logistic function in the exponential form, 
+substituting the parameters by the fitted ones with the exception 
+of growth factor from previous time step that now depends on 
+isolation level of that step and it's calculated by
+
+$$r(t) = {\lambda\over i(i)}, $$
+and the logistic function calculates the current number of cases based 
+on the previous time step isolation level using:
+
+$$n(t+dt)= {K \over 1 + ({ K-n_m \over n_m }) e^{−r(t)\, t}}$$
+
 ```{r}
 # Estimation of cases using fitted parameters and 
 # the mean of isolation level at each time step.
@@ -88,7 +141,7 @@ exp.logistic <- function(t, r_t, K, m) {
 
 # Calculate the constant alpha
 r = coef(logistic.model)["r"]
-alph = r * mean(lvels_dt)
+lamb = r * mean(lvels_dt)
 
 K = coef(logistic.model)["K"]
 m = coef(logistic.model)["m"]
