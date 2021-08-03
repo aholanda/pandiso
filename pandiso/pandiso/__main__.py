@@ -8,9 +8,9 @@ from plot import plot
 
 # Research project information
 __author__ = 'Adriano J. Holanda'
-__copyright__ = 'Copyright 2021, University of São Paulo and Faculty "Dr. Francisco Maeda"'
+__copyright__ = 'Copyright 2021, University of São Paulo'
 __credits__ = ['Adriano J. Holanda']
-__license__ = "MIT"
+__license__ = "Unilicense"
 __version__ = '0.1.0'
 __maintainer__ = 'Adriano J. Holanda'
 __email__ = 'aholanda@usp.br'
