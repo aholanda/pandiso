@@ -1,11 +1,23 @@
 ---
-title: "R Notebook"
+title: "Simple method to correlate infection spread and isolation"
 output: html_notebook
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+# Logistic function
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+```{r}
+library(deSolve)
+df.logistic <- function (t, y, parms) {
+  list(r * y * (1-y/k))
+}
+t_final <- 280
+times <- seq(from=1, to=t_final, by=1)
+y_initial <- c(y=1)
+ode_parms <- c(r=0.1, k=0.5)
+out <- ode(func=df.logistic, y=y_initial, 
+           times=times, parms=ode_parms)
+plot(out, xlab="t", ylab="y", main="Logistic function")
+```
 
 ```{r}
 WD <- getwd();
@@ -18,7 +30,7 @@ cov_data <- read.csv(file_path, header = TRUE, sep = ";");
 # Time step in days
 W <- 5;
 # Number of rows in the data set
-N <- nrow(coviso_data)
+N <- nrow(cov_data)
 # Number of time steps (windows)
 NW <- floor(N/W);
 # Vectors to store the number of cases and average 
@@ -31,7 +43,7 @@ for (i in 1:NW) {
   cases_dt[i] = sum(cov_data[1:k, 2])
   # Assign the sum the cases from rows [j,k] to ith time step
   j = (i-1)*W + 1
-  lvels_dt[i] = mean(cov_data[j:k, 2])
+  lvels_dt[i] = mean(cov_data[j:k, 3])
 }
 ```
 
@@ -50,27 +62,47 @@ r is the the logistic growth rate.
 
 ```{r}
 library(minpack.lm)
-temp <- data.frame(y = caws, x = seq(length(caws)))
-plot(temp$x, temp$y)
-logistic.model <- nlsLM(y ~ (k / (1 + ((k-m)/m)*exp(- r * x))), data = temp, start = list(k = 1, m=1, r = 0.1))
+temp <- data.frame(y = cases_dt, x = seq(length(cases_dt)))
+plot(temp$x, temp$y, xlab="time", ylab="cases")
+logistic.model <- nlsLM(y ~ (K/ (1 + ((K-m)/m)*exp(- r * x))), 
+                        data = temp, 
+                        start = list(K = 1, m=1, r = 0.1))
+summary(logistic.model)
 ys_model <- predict(logistic.model, list(x = temp$x))
 lines(temp$x, ys_model)
-summary(logistic.model)
+legend("topleft", c("empirical"), pch = c(1))
+title("Fitting of empirical data using logistic function")
+# Test the correlation of the empirical data and the model
 cor.test(temp$y, ys_model, method=c("pearson"))
 
 ```
 # Estimating
 
 ```{r}
-r <-  coef(logistic.model)["r"]
-alph <- r * mean(lvels_dt)
-K <- coef(logistic.model)["k"]
-M <- coef(logistic.model)["m"]
-ys_estimated <- vector("numeric", NW)
-for (i in 1:NW) {
-  ys_estimated[i] <- K / (1 + ((K-M)/M)*exp(- r * i))
+# Estimation of cases using fitted parameters and 
+# the mean of isolation level at each time step.
+exp.logistic <- function(t, r_t, K, m) {
+    y = K / (1 + ((K-m)/m)*exp(-r_t * t))
+    y
 }
-plot(temp$x, ys_estimated)
-points(temp$x, cases_dt)
-cor.test(cases_dt, ys_estimated, method=c("pearson"))
+
+# Calculate the constant alpha
+r = coef(logistic.model)["r"]
+alph = r * mean(lvels_dt)
+
+K = coef(logistic.model)["K"]
+m = coef(logistic.model)["m"]
+times = seq(from=1, to=NW-1, by=1)
+cases_dt_estimated = vector("numeric", NW-1)
+for (t in times) {
+  r_t=alph/lvels_dt[t]
+  # This is t+dt compared with empirical time
+  cases_dt_estimated[t] = exp.logistic(t, r_t, K, m)
+}
+plot(times, cases_dt_estimated, xlab="time", ylab="cases")
+points(times, cases_dt[2:NW], pch=20)
+legend("topleft", c("empirical", "estimated"), pch = c(1,20))
+title("Estimation of cases")
+# Test the correlation of the empirical and estimated data.
+cor.test(cases_dt[2:NW], cases_dt_estimated, method=c("pearson"))
 ```
