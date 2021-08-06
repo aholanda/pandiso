@@ -9,14 +9,14 @@ output: html_notebook
 # Differential equations solver
 library(deSolve)
 df.logistic <- function (t, y, parms) {
-  list(r * y * (1-y/K))
+  list(parms["r"] * y * (1-y/parms["K"]))
 }
 t_final <- 700
 times <- seq(from=1, to=t_final, by=1)
 y_initial <- c(y=1)
-ode_parms <- c(r=0.04, K=350)
+parms <- c(r=0.04, K=350)
 out <- ode(func=df.logistic, y=y_initial, 
-           times=times, parms=ode_parms)
+           times=times, parms=parms)
 # Normalize (standardize) the data
 for (i in 1:2) {
   out[,i] <- out[,i] / max(out[,i])
@@ -75,10 +75,10 @@ level <- vector("numeric", NW)
 for (i in 1:NW) {
   k <- i*W
   # Assign the sum the cases from rows [1,k] to ith time step
-  empirical[i] = sum(cov_data[1:k, 2])
+  empirical[i] = sum(df[1:k, 2])
   # Assign the sum the cases from rows [j,k] to ith time step
   j = (i-1)*W + 1
-  level[i] = mean(cov_data[j:k, 3])
+  level[i] = mean(df[j:k, 3])
 }
 dfdt <- data.frame(level, empirical)
 # Add time steps to data frame
@@ -117,7 +117,7 @@ lines(temp$x, dfdt$fitting)
 legend("topleft", c("empirical"), pch = c(1))
 title("Fitting of empirical data using logistic function")
 # Test the correlation of the empirical data and the model
-cor.test(temp$y, ys_model, method=c("pearson"))
+cor.test(temp$y, dfdt$fitting, method=c("pearson"))
 
 ```
 # Estimating
@@ -175,12 +175,12 @@ points(dfdt$time, dfdt$empirical, pch=20)
 legend("topleft", c("empirical", "estimated"), pch = c(1,20))
 title("Estimation of cases")
 # 2nd plot
-plot(seq(from=1,to=length(lvels_dt),by=1), 
-     lvels_dt,
-     ylim=c(min(lvels_dt),max(lvels_dt)),
+plot(dfdt$time, 
+     dfdt$level,
+     ylim=c(min(dfdt$level),max(dfdt$level)),
      xlab="time", 
      ylab="isolation level")
 
 # Test the correlation of the empirical and estimated data.
-cor.test(cases_dt[2:NW], cases_dt_estimated, method=c("pearson"))
+cor.test(dfdt$empirical, dfdt$estimated, method=c("pearson"))
 ```
