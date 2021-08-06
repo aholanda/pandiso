@@ -6,17 +6,23 @@ output: html_notebook
 # Logistic function
 
 ```{r}
+# Differential equations solver
 library(deSolve)
 df.logistic <- function (t, y, parms) {
-  list(r * y * (1-y/k))
+  list(r * y * (1-y/K))
 }
-t_final <- 280
+t_final <- 700
 times <- seq(from=1, to=t_final, by=1)
 y_initial <- c(y=1)
-ode_parms <- c(r=0.1, k=0.5)
+ode_parms <- c(r=0.04, K=350)
 out <- ode(func=df.logistic, y=y_initial, 
            times=times, parms=ode_parms)
+# Normalize (standardize) the data
+for (i in 1:2) {
+  out[,i] <- out[,i] / max(out[,i])
+}
 plot(out, xlab="t", ylab="y", main="Logistic function")
+text(.125, .9, expression(paste(frac("dy","dt"), " = r y (1 - y/K)", sep=" ")))
 ```
 # Data
 
@@ -43,7 +49,7 @@ WD <- getwd();
 FN <- "covid19-sp-BR.csv"
 file_path <- file.path(WD, FN);
 # Read CSV file organizing the data according to columns
-cov_data <- read.csv(file_path, header = TRUE, sep = ";");
+df <- read.csv(file_path, header = TRUE, sep = ";");
 ```
 
 The time step or window `W` is the only input needed to the method.
@@ -59,21 +65,25 @@ The time step or window `W` is the only input needed to the method.
 # Time step in days (window)
 W <- 5;
 # Number of rows in the data set
-N <- nrow(cov_data)
+N <- nrow(df)
 # Number of time steps (windows)
 NW <- floor(N/W);
 # Vectors to store the number of cases and average 
 # of isolation levels at each time step
-cases_dt <- vector("numeric", NW)
-lvels_dt <- vector("numeric", NW)
+empirical <- vector("numeric", NW)
+level <- vector("numeric", NW)
 for (i in 1:NW) {
   k <- i*W
   # Assign the sum the cases from rows [1,k] to ith time step
-  cases_dt[i] = sum(cov_data[1:k, 2])
+  empirical[i] = sum(cov_data[1:k, 2])
   # Assign the sum the cases from rows [j,k] to ith time step
   j = (i-1)*W + 1
-  lvels_dt[i] = mean(cov_data[j:k, 3])
+  level[i] = mean(cov_data[j:k, 3])
 }
+dfdt <- data.frame(level, empirical)
+# Add time steps to data frame
+time <- seq(from=1, to=length(dfdt$level), by=1)
+dfdt$time <- time
 ```
 
 # Fitting
@@ -95,14 +105,15 @@ fitting parameters are used in the estimation phase.
 
 ```{r}
 library(minpack.lm)
-temp <- data.frame(y = cases_dt, x = seq(length(cases_dt)))
+temp <- data.frame(y = dfdt$empirical, x = seq(length(dfdt$empirical)))
 plot(temp$x, temp$y, xlab="time", ylab="cases")
 logistic.model <- nlsLM(y ~ (K/ (1 + ((K-m)/m)*exp(- r * x))), 
                         data = temp, 
                         start = list(K = 1, m=1, r = 0.1))
 summary(logistic.model)
-ys_model <- predict(logistic.model, list(x = temp$x))
-lines(temp$x, ys_model)
+fitting <- predict(logistic.model, list(x = temp$x))
+dfdt$fitting <- fitting
+lines(temp$x, dfdt$fitting)
 legend("topleft", c("empirical"), pch = c(1))
 title("Fitting of empirical data using logistic function")
 # Test the correlation of the empirical data and the model
@@ -114,7 +125,7 @@ cor.test(temp$y, ys_model, method=c("pearson"))
 The estimation is performed after the calculation of $\lambda$
  is done by:
  
- $$\lambda = r_{fit} \overline{i\ },$$
+ $$\lambda = r_{fit}\, \overline{i\ },$$
 where $r_{fit}$ is the logistic growth factor obtained from 
 fitting and $\overline{i }$ is the average of all isolation 
 level values.
@@ -125,7 +136,7 @@ substituting the parameters by the fitted ones with the exception
 of growth factor from previous time step that now depends on 
 isolation level of that step and it's calculated by
 
-$$r(t) = {\lambda\over i(i)}, $$
+$$r(t) = {\lambda\over i(t)}, $$
 and the logistic function calculates the current number of cases based 
 on the previous time step isolation level using:
 
@@ -135,27 +146,41 @@ $$n(t+dt)= {K \over 1 + ({ K-n_m \over n_m }) e^{−r(t)\, t}}$$
 # Estimation of cases using fitted parameters and 
 # the mean of isolation level at each time step.
 exp.logistic <- function(t, r_t, K, m) {
-    y = K / (1 + ((K-m)/m)*exp(-r_t * t))
+    y <- K / (1 + ((K-m)/m)*exp(-r_t * t))
     y
 }
 
 # Calculate the constant alpha
-r = coef(logistic.model)["r"]
-lamb = r * mean(lvels_dt)
+r <- coef(logistic.model)["r"]
+lamb <- r * mean(lvels_dt)
 
-K = coef(logistic.model)["K"]
-m = coef(logistic.model)["m"]
-times = seq(from=1, to=NW-1, by=1)
-cases_dt_estimated = vector("numeric", NW-1)
-for (t in times) {
-  r_t=alph/lvels_dt[t]
+K <- coef(logistic.model)["K"]
+m <- coef(logistic.model)["m"]
+# Estimate the number of cases N(t+dt)
+estimated = vector("numeric", NW)
+# Estimate the first case manually, but not the rest.
+estimated[1] = 1
+for (t in 2:NW) {
+  r_t <- alph/lvels_dt[t]
   # This is t+dt compared with empirical time
-  cases_dt_estimated[t] = exp.logistic(t, r_t, K, m)
+  estimated[t] <- exp.logistic(t, r_t, K, m)
 }
-plot(times, cases_dt_estimated, xlab="time", ylab="cases")
-points(times, cases_dt[2:NW], pch=20)
+dfdt$estimated <- estimated # same as cbind(dfdt, estimated)
+
+# subplot in 2 rows
+par(mfrow=c(2,1))
+# 1st plot
+plot(dfdt$time, dfdt$estimated, xlab="", ylab="cases")
+points(dfdt$time, dfdt$empirical, pch=20)
 legend("topleft", c("empirical", "estimated"), pch = c(1,20))
 title("Estimation of cases")
+# 2nd plot
+plot(seq(from=1,to=length(lvels_dt),by=1), 
+     lvels_dt,
+     ylim=c(min(lvels_dt),max(lvels_dt)),
+     xlab="time", 
+     ylab="isolation level")
+
 # Test the correlation of the empirical and estimated data.
 cor.test(cases_dt[2:NW], cases_dt_estimated, method=c("pearson"))
 ```
