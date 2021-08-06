@@ -151,8 +151,8 @@ exp.logistic <- function(t, r_t, K, m) {
 }
 
 # Calculate the constant alpha
-r <- coef(logistic.model)["r"]
-lamb <- r * mean(lvels_dt)
+r_fit <- coef(logistic.model)["r"]
+lamb <- r_fit * mean(dfdt$level)
 
 K <- coef(logistic.model)["K"]
 m <- coef(logistic.model)["m"]
@@ -161,7 +161,7 @@ estimated = vector("numeric", NW)
 # Estimate the first case manually, but not the rest.
 estimated[1] = 1
 for (t in 2:NW) {
-  r_t <- alph/lvels_dt[t]
+  r_t <- lamb/dfdt$level[t]
   # This is t+dt compared with empirical time
   estimated[t] <- exp.logistic(t, r_t, K, m)
 }
