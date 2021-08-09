@@ -13,6 +13,6 @@ on population isolation level. The test of the method was performed on
     using RStudio.
 4. Run the code chunks.
 
-...
+---
 
 [Adriano J. Holanda](https://ajholanda.github.io/)
