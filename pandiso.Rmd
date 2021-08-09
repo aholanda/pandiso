@@ -6,23 +6,36 @@ output: html_notebook
 # Logistic function
 
 ```{r}
+library(latex2exp)
+library(ggplot2)
 # Differential equations solver
 library(deSolve)
 df.logistic <- function (t, y, parms) {
   list(parms["r"] * y * (1-y/parms["K"]))
 }
-t_final <- 700
+t_final <- 300
 times <- seq(from=1, to=t_final, by=1)
 y_initial <- c(y=1)
 parms <- c(r=0.04, K=350)
 out <- ode(func=df.logistic, y=y_initial, 
            times=times, parms=parms)
 # Normalize (standardize) the data
+
 for (i in 1:2) {
   out[,i] <- out[,i] / max(out[,i])
 }
-plot(out, xlab="t", ylab="y", main="Logistic function")
-text(.125, .9, expression(paste(frac("dy","dt"), " = r y (1 - y/K)", sep=" ")))
+# Create the data frame from logistic output
+dfl <- data.frame(t=out[,1], y=out[,2])
+# Plot
+pl_title <- "Logistic function"
+pl <- ggplot(dfl, aes(x=t, y=y)) +
+      geom_line(color="blue") +
+      labs(title=pl_title, y="cases\n", x = "time") +
+      annotate("text", x=.125, y=.9, 
+               label=TeX("\\frac{dy}{dt} = r y (1 - y / K)"), 
+               size=4)
+pl
+#text(.125, .9, expression(paste(frac("dy","dt"), " = r y (1 - y/K)", sep=" ")))
 ```
 # Data
 
@@ -104,18 +117,29 @@ fitting parameters are used in the estimation phase.
 
 
 ```{r}
+library(ggplot2)
 library(minpack.lm)
 temp <- data.frame(y = dfdt$empirical, x = seq(length(dfdt$empirical)))
-plot(temp$x, temp$y, xlab="time", ylab="cases")
 logistic.model <- nlsLM(y ~ (K/ (1 + ((K-m)/m)*exp(- r * x))), 
                         data = temp, 
                         start = list(K = 1, m=1, r = 0.1))
 summary(logistic.model)
 fitting <- predict(logistic.model, list(x = temp$x))
 dfdt$fitting <- fitting
-lines(temp$x, dfdt$fitting)
-legend("topleft", c("empirical"), pch = c(1))
-title("Fitting of empirical data using logistic function")
+
+# Plot
+p_title <- paste("Fitting of empirical data using", W, "days as time step")
+colors <- c("empirical" = "red", "fitted" = "blue")
+p <- ggplot(dfdt, aes(x=time, y=empirical)) + 
+     geom_point(color = "red") +
+     geom_line(aes(x=time, y=fitting, color = "blue"), size=1) +
+     labs(title=p_title, y="cases\n", x = "time") +
+     scale_color_identity(name = "",
+                          breaks = c("blue"),
+                          labels = c("fit"),
+                          guide = "legend")
+p
+
 # Test the correlation of the empirical data and the model
 cor.test(temp$y, dfdt$fitting, method=c("pearson"))
 
@@ -165,21 +189,30 @@ for (t in 2:NW) {
   # This is t+dt compared with empirical time
   estimated[t] <- exp.logistic(t, r_t, K, m)
 }
-dfdt$estimated <- estimated # same as cbind(dfdt, estimated)
+dfdt$estimated <- estimated
 
 # subplot in 2 rows
-par(mfrow=c(2,1))
-# 1st plot
-plot(dfdt$time, dfdt$estimated, xlab="", ylab="cases")
-points(dfdt$time, dfdt$empirical, pch=20)
-legend("topleft", c("empirical", "estimated"), pch = c(1,20))
-title("Estimation of cases")
-# 2nd plot
-plot(dfdt$time, 
-     dfdt$level,
-     ylim=c(min(dfdt$level),max(dfdt$level)),
-     xlab="time", 
-     ylab="isolation level")
+library(ggplot2)
+library(reshape2)
+p1_title = paste("Estimation of cases using", W, "days as time step")
+p1_label = c("empirical", "estimated")
+# melt the data to a long format
+temp <- data.frame(time=dfdt$time, empirical=dfdt$empirical, estimated=dfdt$estimated)
+df2dt <- melt(data = temp, id.vars = "time")
+p1 <- ggplot(data = df2dt, aes(x = time, y = value, color = variable)) + 
+      geom_point() + 
+      labs(title=p1_title, y="cases\n", x = "") +
+      scale_colour_discrete(name = "data type", labels = c("empirical", "estimated"))
+
+# plot 2
+p2 <- ggplot(data = dfdt, aes(x = time, y = level, color = "")) + 
+      geom_point() + 
+      labs(y="level\n", x = "time") +
+      scale_colour_discrete(name = "isolation", labels = c(""))
+      
+library(grid)
+grid.newpage()
+grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), size = "last"))
 
 # Test the correlation of the empirical and estimated data.
 cor.test(dfdt$empirical, dfdt$estimated, method=c("pearson"))
