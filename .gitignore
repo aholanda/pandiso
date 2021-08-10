@@ -11,7 +11,8 @@ dados-covid-sp
 
 # RStudio
 *.nb.html
-.Rproj.user
+*.Rproj.user
+pandiso*.md
 
 # Temp files
 *~
