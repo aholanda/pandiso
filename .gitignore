@@ -1,6 +1,6 @@
-# Directory cloned from https://github.com/seade-R/dados-covid-sp.git
+# File downloaded from https://github.com/seade-R/dados-covid-sp.git
 # containing the original COVID-19 cases for São Paulo State, Brazil.
-dados-covid-sp
+dados_covid_sp.csv
 
 # results
 *.png
