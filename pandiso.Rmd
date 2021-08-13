@@ -1,5 +1,6 @@
 ---
 title: "Simple method to correlate infection spread and isolation"
+author: "Adriano J. Holanda"
 output: html_notebook
 ---
 
@@ -25,67 +26,160 @@ for (i in 1:2) {
   out[,i] <- out[,i] / max(out[,i])
 }
 # Create the data frame from logistic output
-dfl <- data.frame(t=out[,1], y=out[,2])
+df <- data.frame(t=out[,1], y=out[,2])
 # Plot
 pl_title <- "Logistic function"
-pl <- ggplot(dfl, aes(x=t, y=y)) +
+pl <- ggplot(df, aes(x=t, y=y)) +
       geom_line(color="blue") +
       labs(title=pl_title, y="cases\n", x = "time") +
       annotate("text", x=.125, y=.9, 
                label=TeX("\\frac{dy}{dt} = r y (1 - y / K)"), 
                size=4)
 pl
-#text(.125, .9, expression(paste(frac("dy","dt"), " = r y (1 - y/K)", sep=" ")))
 ```
 # Data
 
-The accumulated number of cases and the average of isolation level for all 
-cities in the São Paulo State were stored in a file called "covid19-sp-BR.csv".
- The first and the last rows correspond to the timeline used in the study.
+The data are processed in periods of time, we use days as 
+unit for time and avoid the use of fractional values to 
+simplify the code and calculations. Another justification 
+for the discrete values for time is that we are handling 
+approximations for the conditions studied.
 
-A row in the CSV file looks like this:
+ The value of `TIME_STEP` was adopted after a set of tests 
+ were performed to check which value causes 
+ a better correlation in the curves 
+ for the model and estimated data. 
+ This high correlation means that 
+ the isolation level in that time step 
+ affects the number of cases in the 
+ next time step.
 
-```{}
-20200421;805;0.5810548129496403
+But if you want to test a different time step, 
+here is the place to tweak:
+
+```{r}
+TIME_STEP <- 5 # days.
 ```
 
-The fields are separated by semicolon ";" with the first column representing 
-the date in the format YYYYMMDD (Y - year characters, M - month characters, D - day characters),
-the second column represent the number of cases on that day and the third the isolation level 
-assessed during the day.
+## COVID-19
 
+The COVID-19 cases are gathered from 
+["São Paulo Plan"](https://www.saopaulo.sp.gov.br/planosp/) 
+ organized by the government of São Paulo State. Brazil 
+ to concentrate efforts to handle the virus spread in the 
+ state. The file containing the cases, and other data, 
+ is downloaded from 
+ [Github repository](https://github.com/seade-R/dados-covid-sp)
+ for the initiative.
 
+TODO: put an alternate source
 ```{r}
 # Current directory
 WD <- getwd();
-# Data file name
-FN <- "covid19-sp-BR.csv"
-file_path <- file.path(WD, FN);
+# File with COVID-19 cases
+fn <- "dados_covid_sp.csv"
+# Download the data from original source
+fp <- file.path(WD, fn);
+if (file.exists(fp) == FALSE) {
+  download.file(paste("https://raw.githubusercontent.com/seade-R/dados-covid-sp/master/data/", fn, sep = ""), fp)
+}
 # Read CSV file organizing the data according to columns
-df <- read.csv(file_path, header = TRUE, sep = ";");
+df <- read.csv(fp, header = TRUE, sep = ";");
+# Sum the cases for all cities by date
+dfc <- aggregate(casos_novos~datahora, FUN=sum, data=df)
+# Rename the data frame columns
+names(dfc)[names(dfc) == "datahora"] <- "date"
+names(dfc)[names(dfc) == "casos_novos"] <- "cases"
 ```
 
-The time step or window `W` is the only input needed to the method.
- The value of `W` was adopted after a set of tests performed to 
- check which value causes a better correlation in the curves 
- for the model and estimated data. This high correlation means that 
- the isolation level in that time step affects the number of cases in the 
- next time step. The cases are summed and isolation levels 
- are averaged in each time step `W`
+## Isolation level
 
+The isolation level for all cities in the São Paulo State are 
+stored in an Excel file downloaded from 
+[``São Paulo Government Isolation Monitoring'' site](https://www.saopaulo.sp.gov.br/coronavirus/isolamento/).
+ The file must be downloaded manually after clicking in the ``DADOS'' button, 
+ then click ``Baixar'' icon, choose ``Tabela de referência cruzada',' ``Excel'' format
+  and click ``Baixar'' button. 
+ We choose the Excel format because was the content that could be parsed with 
+ reliability. The dates are synchronized with the ones in cases data, only the 
+ format is different ("DD/MM/YY"), but this is fixed by changing it to
+ "YYYY-MM-DD".
 
 ```{r}
-# Time step in days (window)
-W <- 5;
-# Number of rows in the data set
-N <- nrow(df)
-# Number of time steps (windows)
-NW <- floor(N/W);
+library(readxl)
+fn <- "Dados.xlsx"
+fp <- file.path(WD, fn)
+df <- read_excel(fp)
+# The isolation level data start at 5th column and the
+# first row is the date, the rest are isolation level 
+# values.
+shift <- 4 # 5th column because indices in R start at 1
+dates <- vector("character", ncol(df) - shift)
+values <- vector("numeric", ncol(df) - shift)
+for (j in (shift+1):ncol(df)) {
+  # process dates
+  tmp <- toString(df[1,j])
+  tmp <- unlist(strsplit(tmp, "/"))
+  # convert "DD/MM/YY" to "YYYY-MM-DD"
+  dates[j-shift] <- paste(paste("20", tmp[[3]], sep=""), tmp[[2]], tmp[[1]], sep="-")
+  # process isolation level values
+  tmps <- as.numeric(unlist(as.list(df[2:nrow(df),j])))
+  good <- complete.cases(tmps)
+  values[j-shift] <- mean(tmps[good])
+}
+dfl <- data.frame(date=dates, level=values)
+```
+
+## Processing
+
+The sum of cases in a time step (period) are accumulated 
+and the last date of the period is associated with the
+cumulative value. The same reasoning for isolation level, 
+with the exception that the levels are averaged in the period.
+
+The isolation level data frame `dfl` is used to calculate
+the number of steps `T_TIME_STEPS` because its update
+is delayed when compared with the case values update.
+
+```{r}
+# Cases are accumulated along the time
+IS.CUMULATIVE <- TRUE
+# Number of elements in the data frame
+N_TIME_STEPS <- floor(length(dfl[,1]) /  TIME_STEP)
+cases_dt <- vector("numeric", N_TIME_STEPS)
+levels_dt <- vector("numeric", N_TIME_STEPS)
+dates_dt <- vector("character", N_TIME_STEPS)
+# Find the intersection of dates to avoid mismatch.
+dates <- intersect(dfc[,"date"], dfl[,"date"])
+count_cases <- 0
+count_level <- 0.0
+count <- 0
+for (date in dates) {
+  count <- count + 1
+  count_cases <- count_cases + subset(dfc, date==date)[2]
+  count_level <- count_level + subset(dfl, date==date)[2]
+  
+  if ((count %% TIME_STEP) == 0) {
+    k <- count / TIME_STEP
+    print(k)
+    dates_dt[k]  <- date
+    values_dt[k] <- count_cases
+    levels_dt[k] <- count_level / TIME_STEP
+    count_level <- 0.0
+    if (IS.CUMULATIVE == FALSE) {
+      count_cases <- 0
+    }
+  }
+}
+#dfdt = data.frame(date=dates_dt, empirical=cases_dt, level=levels_dt)
+```
+
+```{r}
 # Vectors to store the number of cases and average 
 # of isolation levels at each time step
-empirical <- vector("numeric", NW)
-level <- vector("numeric", NW)
-for (i in 1:NW) {
+empirical <- vector("numeric", N_TIME_STEPS)
+level <- vector("numeric", N_TIME_STEPS)
+for (i in 1:N_TIME_STEPS) {
   k <- i*W
   # Assign the sum the cases from rows [1,k] to ith time step
   empirical[i] = sum(df[1:k, 2])
@@ -202,7 +296,8 @@ df2dt <- melt(data = temp, id.vars = "time")
 p1 <- ggplot(data = df2dt, aes(x = time, y = value, color = variable)) + 
       geom_point() + 
       labs(title=p1_title, y="cases\n", x = "") +
-      scale_colour_discrete(name = "data type", labels = c("empirical", "estimated"))
+      scale_colour_discrete(name = "data type", labels = c("empirical", "estimated")) +
+      theme(axis.title.x = element_blank(), axis.text.x = element_blank())
 
 # plot 2
 p2 <- ggplot(data = dfdt, aes(x = time, y = level, color = "")) + 
