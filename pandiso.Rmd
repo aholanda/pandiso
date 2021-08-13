@@ -156,14 +156,16 @@ count_level <- 0.0
 count <- 0
 for (date in dates) {
   count <- count + 1
-  count_cases <- count_cases + subset(dfc, date==date)[2]
+  tmp <- subset(dfc, date==date)[2]
+  print(tmp)
+  count_cases <- count_cases + tmp$cases
   count_level <- count_level + subset(dfl, date==date)[2]
   
   if ((count %% TIME_STEP) == 0) {
     k <- count / TIME_STEP
-    print(k)
+    #print(k)
     dates_dt[k]  <- date
-    values_dt[k] <- count_cases
+    cases_dt[k] <- count_cases
     levels_dt[k] <- count_level / TIME_STEP
     count_level <- 0.0
     if (IS.CUMULATIVE == FALSE) {
