@@ -8,7 +8,8 @@ output: html_notebook
 
 ```{r}
 library(latex2exp)
-library(ggplot2)
+# Smooth the line plotted
+require(splines)
 # Differential equations solver
 library(deSolve)
 df.logistic <- function (t, y, parms) {
@@ -28,14 +29,16 @@ for (i in 1:2) {
 # Create the data frame from logistic output
 df <- data.frame(t=out[,1], y=out[,2])
 # Plot
-pl_title <- "Logistic function"
-pl <- ggplot(df, aes(x=t, y=y)) +
-      geom_line(color="blue") +
-      labs(title=pl_title, y="cases\n", x = "time") +
-      annotate("text", x=.125, y=.9, 
-               label=TeX("\\frac{dy}{dt} = r y (1 - y / K)"), 
-               size=4)
-pl
+xy <- predict(interpSpline(df$t, df$y))
+plot(xy,
+     type = "l",
+     main = "Logistic function",
+     xlab = "t",
+     ylab = "y")
+
+#annotate("text", x=.125, y=.9, 
+#               label=TeX("\\frac{dy}{dt} = r y (1 - y / K)"), 
+#               size=4)
 ```
 # Data
 
@@ -90,6 +93,8 @@ dfc <- aggregate(casos_novos~datahora, FUN=sum, data=df)
 # Rename the data frame columns
 names(dfc)[names(dfc) == "datahora"] <- "date"
 names(dfc)[names(dfc) == "casos_novos"] <- "cases"
+# Convert date string to date Class
+dfc$date <- as.Date(dfc$date)
 ```
 
 ## Isolation level
@@ -121,13 +126,15 @@ for (j in (shift+1):ncol(df)) {
   tmp <- toString(df[1,j])
   tmp <- unlist(strsplit(tmp, "/"))
   # convert "DD/MM/YY" to "YYYY-MM-DD"
-  dates[j-shift] <- paste(paste("20", tmp[[3]], sep=""), tmp[[2]], tmp[[1]], sep="-")
+  tmp <- paste(paste("20", tmp[[3]], sep=""), tmp[[2]], tmp[[1]], sep="-")
+  dates[j-shift] <- as.character(tmp)
   # process isolation level values
   tmps <- as.numeric(unlist(as.list(df[2:nrow(df),j])))
+  # mark non-empty cells, in some cells the value is missing
   good <- complete.cases(tmps)
   values[j-shift] <- mean(tmps[good])
 }
-dfl <- data.frame(date=dates, level=values)
+dfl <- data.frame(date=as.Date(dates), level=values)
 ```
 
 ## Processing
@@ -150,46 +157,27 @@ cases_dt <- vector("numeric", N_TIME_STEPS)
 levels_dt <- vector("numeric", N_TIME_STEPS)
 dates_dt <- vector("character", N_TIME_STEPS)
 # Find the intersection of dates to avoid mismatch.
-dates <- intersect(dfc[,"date"], dfl[,"date"])
-count_cases <- 0
-count_level <- 0.0
-count <- 0
-for (date in dates) {
-  count <- count + 1
-  tmp <- subset(dfc, date==date)[2]
-  print(tmp)
-  count_cases <- count_cases + tmp$cases
-  count_level <- count_level + subset(dfl, date==date)[2]
-  
-  if ((count %% TIME_STEP) == 0) {
-    k <- count / TIME_STEP
-    #print(k)
-    dates_dt[k]  <- date
-    cases_dt[k] <- count_cases
-    levels_dt[k] <- count_level / TIME_STEP
-    count_level <- 0.0
-    if (IS.CUMULATIVE == FALSE) {
-      count_cases <- 0
-    }
-  }
-}
-#dfdt = data.frame(date=dates_dt, empirical=cases_dt, level=levels_dt)
-```
-
-```{r}
-# Vectors to store the number of cases and average 
-# of isolation levels at each time step
-empirical <- vector("numeric", N_TIME_STEPS)
-level <- vector("numeric", N_TIME_STEPS)
+dates <- intersect(as.character(dfc[,"date"]), as.character(dfl[,"date"]))
+ts <- seq(from=1, to=N_TIME_STEPS, by=TIME_STEP)
 for (i in 1:N_TIME_STEPS) {
-  k <- i*W
-  # Assign the sum the cases from rows [1,k] to ith time step
-  empirical[i] = sum(df[1:k, 2])
-  # Assign the sum the cases from rows [j,k] to ith time step
-  j = (i-1)*W + 1
-  level[i] = mean(df[j:k, 3])
+  # Time step [inf, sup]
+  # time lower bound
+  inf <- TIME_STEP * (i-1) + 1
+  # time upper bound
+  sup <- TIME_STEP*i
+  
+  # Date interval is marked by the upper bound
+  dates_dt[i] <- dates[sup]
+  # The levels are averaged
+  levels_dt[i] <- mean(dfl[dfl$date >= dates[inf] & dfl$date <= dates[sup],]$level)
+  
+  if (IS.CUMULATIVE == TRUE) {
+    inf <- 1
+  }
+  # The cases are summed since from the first case if IS.CUMULATIVE is TRUE
+  cases_dt[i] <-  sum(dfc[dfc$date >= dates[inf] & dfc$date <= dates[sup],]$cases)
 }
-dfdt <- data.frame(level, empirical)
+dfdt = data.frame(date=dates_dt, empirical=cases_dt, level=levels_dt)
 # Add time steps to data frame
 time <- seq(from=1, to=length(dfdt$level), by=1)
 dfdt$time <- time
@@ -213,7 +201,6 @@ fitting parameters are used in the estimation phase.
 
 
 ```{r}
-library(ggplot2)
 library(minpack.lm)
 temp <- data.frame(y = dfdt$empirical, x = seq(length(dfdt$empirical)))
 logistic.model <- nlsLM(y ~ (K/ (1 + ((K-m)/m)*exp(- r * x))), 
@@ -224,17 +211,14 @@ fitting <- predict(logistic.model, list(x = temp$x))
 dfdt$fitting <- fitting
 
 # Plot
-p_title <- paste("Fitting of empirical data using", W, "days as time step")
-colors <- c("empirical" = "red", "fitted" = "blue")
-p <- ggplot(dfdt, aes(x=time, y=empirical)) + 
-     geom_point(color = "red") +
-     geom_line(aes(x=time, y=fitting, color = "blue"), size=1) +
-     labs(title=p_title, y="cases\n", x = "time") +
-     scale_color_identity(name = "",
-                          breaks = c("blue"),
-                          labels = c("fit"),
-                          guide = "legend")
-p
+plot(temp$x, temp$y, xlab = "time", ylab = "cases", 
+     main = paste("Fitting of empirical data using", TIME_STEP, "days as time step"))
+logistic.model <- nlsLM(y ~ (k / (1 + ((k-m)/m)*exp(- r * x))), data = temp, start = list(k = 1, m=1, r = 0.1))
+ys_model <- predict(logistic.model, list(x = temp$x))
+lines(temp$x, ys_model)
+
+# TODO: review plot title
+# TODO: rethink correlation method
 
 # Test the correlation of the empirical data and the model
 cor.test(temp$y, dfdt$fitting, method=c("pearson"))
@@ -274,43 +258,28 @@ exp.logistic <- function(t, r_t, K, m) {
 r_fit <- coef(logistic.model)["r"]
 lamb <- r_fit * mean(dfdt$level)
 
-K <- coef(logistic.model)["K"]
+K <- coef(logistic.model)["k"]
 m <- coef(logistic.model)["m"]
 # Estimate the number of cases N(t+dt)
-estimated = vector("numeric", NW)
+estimated = vector("numeric", N_TIME_STEPS)
 # Estimate the first case manually, but not the rest.
 estimated[1] = 1
-for (t in 2:NW) {
-  r_t <- lamb/dfdt$level[t]
+for (i in 2:N_TIME_STEPS) {
+  r_t <- lamb/dfdt$level[i]
   # This is t+dt compared with empirical time
-  estimated[t] <- exp.logistic(t, r_t, K, m)
+  estimated[i] <- exp.logistic(i, r_t, K, m)
+  print(estimated[i])
 }
 dfdt$estimated <- estimated
 
 # subplot in 2 rows
-library(ggplot2)
-library(reshape2)
-p1_title = paste("Estimation of cases using", W, "days as time step")
-p1_label = c("empirical", "estimated")
+#p1_title = paste("Estimation of cases using", W, "days as time step")
+#p1_label = c("empirical", "estimated")
 # melt the data to a long format
-temp <- data.frame(time=dfdt$time, empirical=dfdt$empirical, estimated=dfdt$estimated)
-df2dt <- melt(data = temp, id.vars = "time")
-p1 <- ggplot(data = df2dt, aes(x = time, y = value, color = variable)) + 
-      geom_point() + 
-      labs(title=p1_title, y="cases\n", x = "") +
-      scale_colour_discrete(name = "data type", labels = c("empirical", "estimated")) +
-      theme(axis.title.x = element_blank(), axis.text.x = element_blank())
-
+# plot
+plot(dfdt$time, dfdt$empirical)
 # plot 2
-p2 <- ggplot(data = dfdt, aes(x = time, y = level, color = "")) + 
-      geom_point() + 
-      labs(y="level\n", x = "time") +
-      scale_colour_discrete(name = "isolation", labels = c(""))
-      
-library(grid)
-grid.newpage()
-grid.draw(rbind(ggplotGrob(p1), ggplotGrob(p2), size = "last"))
-
+points(dfdt$time, dfdt$estimated, pch = 8) 
 # Test the correlation of the empirical and estimated data.
 cor.test(dfdt$empirical, dfdt$estimated, method=c("pearson"))
 ```
