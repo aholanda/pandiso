@@ -39,6 +39,7 @@ plot(xy,
 #annotate("text", x=.125, y=.9, 
 #               label=TeX("\\frac{dy}{dt} = r y (1 - y / K)"), 
 #               size=4)
+rm(df, i, out, parms, times, t_final, xy, y_initial)
 ```
 # Data
 
@@ -95,6 +96,7 @@ names(dfc)[names(dfc) == "datahora"] <- "date"
 names(dfc)[names(dfc) == "casos_novos"] <- "cases"
 # Convert date string to date Class
 dfc$date <- as.Date(dfc$date)
+rm(fn)
 ```
 
 ## Isolation level
@@ -135,6 +137,7 @@ for (j in (shift+1):ncol(df)) {
   values[j-shift] <- mean(tmps[good])
 }
 dfl <- data.frame(date=as.Date(dates), level=values)
+rm(fn, good, j, shift, tmp, tmps, values)
 ```
 
 ## Processing
@@ -158,7 +161,6 @@ levels_dt <- vector("numeric", N_TIME_STEPS)
 dates_dt <- vector("character", N_TIME_STEPS)
 # Find the intersection of dates to avoid mismatch.
 dates <- intersect(as.character(dfc[,"date"]), as.character(dfl[,"date"]))
-ts <- seq(from=1, to=N_TIME_STEPS, by=TIME_STEP)
 for (i in 1:N_TIME_STEPS) {
   # Time step [inf, sup]
   # time lower bound
@@ -179,8 +181,10 @@ for (i in 1:N_TIME_STEPS) {
 }
 dfdt = data.frame(date=dates_dt, empirical=cases_dt, level=levels_dt)
 # Add time steps to data frame
-time <- seq(from=1, to=length(dfdt$level), by=1)
-dfdt$time <- time
+times <- seq(from=1, to=length(dfdt$level), by=1)
+dfdt$time <- times
+# Clean up some variables not needed anymore
+rm(cases_dt, dates, dates_dt, dfl, dfc, i, levels_dt, times)
 ```
 
 # Fitting
@@ -209,6 +213,7 @@ logistic.model <- nlsLM(y ~ (K/ (1 + ((K-m)/m)*exp(- r * x))),
 summary(logistic.model)
 fitting <- predict(logistic.model, list(x = temp$x))
 dfdt$fitting <- fitting
+rm(fitting)
 
 # Plot
 plot(temp$x, temp$y, xlab = "time", ylab = "cases", 
@@ -222,7 +227,7 @@ lines(temp$x, ys_model)
 
 # Test the correlation of the empirical data and the model
 cor.test(temp$y, dfdt$fitting, method=c("pearson"))
-
+rm(ys_model)
 ```
 # Estimating
 
@@ -247,6 +252,7 @@ on the previous time step isolation level using:
 $$n(t+dt)= {K \over 1 + ({ K-n_m \over n_m }) e^{−r(t)\, t}}$$
 
 ```{r}
+library(emdbook)  # scinot
 # Estimation of cases using fitted parameters and 
 # the mean of isolation level at each time step.
 exp.logistic <- function(t, r_t, K, m) {
@@ -268,18 +274,44 @@ for (i in 2:N_TIME_STEPS) {
   r_t <- lamb/dfdt$level[i]
   # This is t+dt compared with empirical time
   estimated[i] <- exp.logistic(i, r_t, K, m)
-  print(estimated[i])
 }
 dfdt$estimated <- estimated
+rm(estimated)
 
-# subplot in 2 rows
-#p1_title = paste("Estimation of cases using", W, "days as time step")
-#p1_label = c("empirical", "estimated")
-# melt the data to a long format
-# plot
-plot(dfdt$time, dfdt$empirical)
-# plot 2
-points(dfdt$time, dfdt$estimated, pch = 8) 
+# Subplot in 2 rows, same x
+par(mfrow = c(2, 1), mar = c(0, 4.1, 4, 2))
+## Subplot 1
+plot(dfdt$time, dfdt$empirical, frame.plot = TRUE,
+     axes = FALSE, yaxt = "none",
+     pch = 19, col = 1, xlab = "", ylab = "cases")
+#### add y axis
+axis.scinot(side=2, c(2*10^6, 4*10^6))  # TODO: plug with y values
+### plot another set of points
+points(dfdt$time, dfdt$estimated, pch = 19, col = "gray49")
+### add legend
+legend("topleft", legend = c(names(dfdt)[2], names(dfdt)[6]), 
+       col = c(1, "gray49"), pch = 19, bty = "n")
+title(main = paste("Time step=", TIME_STEP, " days", sep = ""))
+mtext("a)", side = 3, at = -17)
+
+## Subplot 2
+par(mar = c(4, 4.1, 0, 2))
+plot(dfdt$time, dfdt$level, pch = 19, col = "gray35", 
+     axes = FALSE, frame.plot = TRUE,
+     xlab = names(dfdt)[4], ylab = names(dfdt)[3])
+### add legend
+legend("topright", legend = "isolation", 
+       col = "gray35", pch = 19, bty = "y")
+#### add x axis
+axis(side = 1)
+#### add y axis
+axis(side = 2, las = 1)
+### add subplot 2 identifier
+mtext("b)", side = 3, at = -17)
+mtext(paste("time span=[", dfdt$date[1], ", ",dfdt$date[length(dfdt$date)], "]", sep = ""), 
+      side = 3, line = -1, cex=.75)
+
 # Test the correlation of the empirical and estimated data.
 cor.test(dfdt$empirical, dfdt$estimated, method=c("pearson"))
+rm(df)
 ```
