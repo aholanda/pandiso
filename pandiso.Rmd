@@ -1,8 +1,17 @@
 ---
-title: "Simple method to correlate infection spread and isolation"
+title: "Simple method to correlate infection spread and isolation using logistic function"
 author: "Adriano J. Holanda"
 output: html_notebook
 ---
+
+# Introduction
+
+The logistic function is used to estimate the number 
+of individuals infected by a virus in a time $t+1$
+using the average isolation level in a population at a time $t$. 
+Each time step is composed by a date range in days 
+where the isolation level is supposed to take effect over the 
+virus spread.
 
 # Logistic function
 
@@ -41,7 +50,7 @@ plot(xy,
 #               size=4)
 rm(df, i, out, parms, times, t_final, xy, y_initial)
 ```
-# Data
+# Phase 0 - Data Organization
 
 The data are processed in periods of time, we use days as 
 unit for time and avoid the use of fractional values to 
@@ -49,7 +58,7 @@ simplify the code and calculations. Another justification
 for the discrete values for time is that we are handling 
 approximations for the conditions studied.
 
- The value of `TIME_STEP` was adopted after a set of tests 
+ The value of `DATE_STEP` was adopted after a set of tests 
  were performed to check which value causes 
  a better correlation in the curves 
  for the model and estimated data. 
@@ -62,10 +71,10 @@ But if you want to test a different time step,
 here is the place to tweak:
 
 ```{r}
-TIME_STEP <- 5 # days.
+DATE_STEP <- 5 # days.
 ```
 
-## COVID-19
+## COVID-19 cases
 
 The COVID-19 cases are gathered from 
 ["São Paulo Plan"](https://www.saopaulo.sp.gov.br/planosp/) 
@@ -99,16 +108,17 @@ dfc$date <- as.Date(dfc$date)
 rm(fn)
 ```
 
-## Isolation level
+## Population isolation level
 
 The isolation level for all cities in the São Paulo State are 
 stored in an Excel file downloaded from 
 [``São Paulo Government Isolation Monitoring'' site](https://www.saopaulo.sp.gov.br/coronavirus/isolamento/).
- The file must be downloaded manually after clicking in the ``DADOS'' button, 
- then click ``Baixar'' icon, choose ``Tabela de referência cruzada',' ``Excel'' format
-  and click ``Baixar'' button. 
- We choose the Excel format because was the content that could be parsed with 
- reliability. The dates are synchronized with the ones in cases data, only the 
+
+The file must be downloaded manually after clicking in the "DADOS" button, 
+then click "Baixar" icon, choose "Tabela de referência cruzada", "Excel" format
+  and click "Baixar" button. 
+ We choose the Excel format because its content could be parsed with 
+ reliability. The isolation dates are synchronized cases data, only the 
  format is different ("DD/MM/YY"), but this is fixed by changing it to
  "YYYY-MM-DD".
 
@@ -148,14 +158,14 @@ cumulative value. The same reasoning for isolation level,
 with the exception that the levels are averaged in the period.
 
 The isolation level data frame `dfl` is used to calculate
-the number of steps `T_TIME_STEPS` because its update
+the number of steps `N_TIME_STEPS` because its update
 is delayed when compared with the case values update.
 
 ```{r}
 # Cases are accumulated along the time
 IS.CUMULATIVE <- TRUE
 # Number of elements in the data frame
-N_TIME_STEPS <- floor(length(dfl[,1]) /  TIME_STEP)
+N_TIME_STEPS <- floor(length(dfl[,1]) /  DATE_STEP)
 cases_dt <- vector("numeric", N_TIME_STEPS)
 levels_dt <- vector("numeric", N_TIME_STEPS)
 dates_dt <- vector("character", N_TIME_STEPS)
@@ -164,9 +174,9 @@ dates <- intersect(as.character(dfc[,"date"]), as.character(dfl[,"date"]))
 for (i in 1:N_TIME_STEPS) {
   # Time step [inf, sup]
   # time lower bound
-  inf <- TIME_STEP * (i-1) + 1
+  inf <- DATE_STEP * (i-1) + 1
   # time upper bound
-  sup <- TIME_STEP*i
+  sup <- DATE_STEP*i
   
   # Date interval is marked by the upper bound
   dates_dt[i] <- dates[sup]
@@ -187,7 +197,7 @@ dfdt$time <- times
 rm(cases_dt, dates, dates_dt, dfl, dfc, i, levels_dt, times)
 ```
 
-# Fitting
+# Phase 1 - Fitting
 
 Logistic function in the exponential form:
 
@@ -217,7 +227,7 @@ rm(fitting)
 
 # Plot
 plot(temp$x, temp$y, xlab = "time", ylab = "cases", 
-     main = paste("Fitting of empirical data using", TIME_STEP, "days as time step"))
+     main = paste("Fitting of empirical data using", DATE_STEP, "days as date step"))
 logistic.model <- nlsLM(y ~ (k / (1 + ((k-m)/m)*exp(- r * x))), data = temp, start = list(k = 1, m=1, r = 0.1))
 ys_model <- predict(logistic.model, list(x = temp$x))
 lines(temp$x, ys_model)
@@ -229,13 +239,14 @@ lines(temp$x, ys_model)
 cor.test(temp$y, dfdt$fitting, method=c("pearson"))
 rm(ys_model)
 ```
-# Estimating
+# Phase 2 - Estimating
 
 The estimation is performed after the calculation of $\lambda$
  is done by:
  
  $$\lambda = r_{fit}\, \overline{i\ },$$
-where $r_{fit}$ is the logistic growth factor obtained from 
+ 
+\noindent where $r_{fit}$ is the logistic growth factor obtained from 
 fitting and $\overline{i }$ is the average of all isolation 
 level values.
 
@@ -291,7 +302,7 @@ points(dfdt$time, dfdt$estimated, pch = 19, col = "gray49")
 ### add legend
 legend("topleft", legend = c(names(dfdt)[2], names(dfdt)[6]), 
        col = c(1, "gray49"), pch = 19, bty = "n")
-title(main = paste("Time step=", TIME_STEP, " days", sep = ""))
+title(main = paste("Date step=", DATE_STEP, " days", sep = ""))
 mtext("a)", side = 3, at = -17)
 
 ## Subplot 2
