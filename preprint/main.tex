@@ -1,0 +1,383 @@
+\documentclass[review]{elsarticle}
+
+\usepackage{lineno,hyperref}
+\modulolinenumbers[5]
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Overleaf Example},
+    pdfpagemode=FullScreen,
+}
+\usepackage{amsmath}
+
+\journal{{\tt no Journal}}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%% Elsevier bibliography styles
+%%%%%%%%%%%%%%%%%%%%%%%
+%% To change the style, put a % in front of the second line of the current style and
+%% remove the % from the second line of the style you would like to use.
+%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Numbered
+%\bibliographystyle{model1-num-names}
+
+%% Numbered without titles
+%\bibliographystyle{model1a-num-names}
+
+%% Harvard
+%\bibliographystyle{model2-names.bst}\biboptions{authoryear}
+
+%% Vancouver numbered
+%\usepackage{numcompress}\bibliographystyle{model3-num-names}
+
+%% Vancouver name/year
+%\usepackage{numcompress}\bibliographystyle{model4-names}\biboptions{authoryear}
+
+%% APA style
+%\bibliographystyle{model5-names}\biboptions{authoryear}
+
+%% AMA style
+%\usepackage{numcompress}\bibliographystyle{model6-num-names}
+
+%% `Elsevier LaTeX' style
+\bibliographystyle{elsarticle-num}
+%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Estimating the number of cases of {COVID-19} from population isolation level}
+%\tnotetext[mytitlenote]{Source code and data are available in the Github repository \href{https://github.com/aholanda/pandiso}{pandiso}.}
+
+%% or include affiliations in footnotes:
+\author[mymainaddress,mysecondaryaddress]{Adriano J.\ Holanda}
+\ead{aholanda@usp.br}
+
+\address[mymainaddress]{Department of Computing and Mathematics - Faculty of Philosophy, Science and Letters at Ribeirão Preto - University of São Paulo, Ribeirão Preto, São Paulo, Brazil}
+\address[mysecondaryaddress]{Faculty ``Dr.\ Francisco Maeda'', Ituverava, São Paulo, Brazil}
+
+%\section{Front matter}
+
+\begin{abstract}
+We use the logistic function to estimate the number 
+of individuals infected by a virus in a period of time
+using as parameter the average isolation level in a population
+in the previous period of the infection occurrences.
+Each period is composed by a date range in days 
+where the isolation level is supposed to take
+effect over the virus spread over the next 
+date range.
+
+We present a method to calculate the number of individuals 
+infected by a virus in a period of time as 
+an effect of social distancing
+using the logistic function and the average isolation level 
+in the period before that period of time. 
+We use the COVID-19 and isolation level data 
+from São Paulo State, Brazil as sample.  
+The method is divided into two phases: 
+1) the logistic function is fitted against COVID-19 
+empirical data to obtain its parameters; 
+2) the fitted paramaters, 
+with the exception of overall growth factor,
+ and the average isolation level for all periods of time 
+are used to calculate a constant called $\lambda$ 
+that is used to obtain the logistic growth factor 
+$r(t)$ using the isolation level $i(t)$.
+ The number of cases after
+the period of time $n(t+\Delta t)$ is calculated using 
+logistic function and $r(t)$ as an effect
+of people isolation during $\Delta t$. 
+The period of time $\Delta t$ that produces a 
+better correlation between empirical and estimated cases 
+was 5 days. We conclude the method produces a good 
+estimation when correlated with the empirical data.
+\end{abstract}
+
+\begin{keyword}
+SARS-CoV-2\sep COVID-19\sep logistic function \sep isolation
+\end{keyword}
+
+\end{frontmatter}
+
+\linenumbers
+
+\section{Introduction}
+
+SARS-CoV-2 is the virus that causes the infection called coronavirus disease (COVID-19). 
+COVID-19 pandemic control will depend on the coverage of population immunity obtained 
+through infection or vaccination~\cite{WHOa}. The mutants of SARS-Cov-2 impose a challenge in 
+the predictability in the long-term efficacy of the current vaccines. 
+ It’s of utmost importance the preparation of updated vaccines tailored 
+to emerging variants that are cross-reactive against all circulating variants~\cite{Harvey2021}. 
+Indeed, a small percentage of population in some countries is immunized against SARS-CoV-2, 
+e.g., only 13.7\% of the population is fully vaccinated in Brazil~\cite{MH2021}.
+The SARS-Cov-2’s variants and its low rate of immunization impose the continuation of 
+non-pharmacological approaches: handwashing, use of facial masks and social distancing~\cite{WHOb}. 
+Among these approaches, only social distancing can be measured effectively using 
+communication traces~\cite{Farrahi2014}. 
+Indeed, isolating cases, quarantining contacts and implementing
+large-scale social distancing approaches have been proving to 
+be effective in the control of virus spread~\cite{Aquino2020}.
+
+In this study, we use the number of cases and the fitted parameters of logistic function 
+to predict the number of cases based on the isolation level of the population. 
+We use São Paulo State data as a test-bed, but the method is simple and generic 
+to apply to any population data. 
+São Paulo is one and the most populous of the 26 states 
+of the Federative Republic of Brazil with 
+more than 40-million inhabitants, 21.9\% 
+of Brazilian population and is responsible for 33.9\% 
+of Brazil’s GPD (Gross Domestic Product) (\url{https://www.ibge.gov.br/cidades-e-estados/sp.html}).
+
+\section{Methods}
+
+\subsection{Data}
+
+We gathered the number of cases of COVID-19 in São Paulo State, Brazil, from Github 
+repository of ``São Paulo Plan'' (\url{https://github.com/seade-R/dados-covid-sp}) 
+that is a initiative from the state government to organize and process data from COVID-19 
+from all cities of the state. The aim is to help in the decision making to implement public 
+procedures to control the SARS-Cov-2 spread. We fetch the population isolation level data 
+for all state cities also from 
+``São Paulo Plan'', but from another site (\url{https://www.saopaulo.sp.gov.br/coronavirus/isolamento/}).
+
+We’ve developed a set of scripts using Python programming language to perform the sum of the 
+number of cases and to calculate the average isolation level for all cities per day and to save
+ the results in a separate file. We’ve used the scripts to process the daily assessment using
+ the time step in days as an argument to group the data. In each group of days,
+ the cases are summed and the isolation levels averaged.
+
+\subsection{Fitting}
+
+We choose the logistic function to model the COVID-19 spread behavior. 
+The plot the cumulative number of cases of COVID-19 at each time step 
+was performed and the data was fitted using the solution for the logistic function:
+
+\begin{equation}
+{dN \over dt} = r N (1 - {N \over K})
+\label{eq:df:logistic}
+\end{equation}
+
+\noindent that is
+
+\begin{equation}
+N(t) = {K \over {1- {(K-N_{m}) \over N} e^{-rt}}}
+\label{eq:exp:logistic}
+\end{equation}
+
+\noindent where $K$ is the maximum value reachable by $N$, 
+$N_m$ is the curve midpoint, 
+$r$ is the growth rate 
+and $t$ are the time steps.
+
+Figure \ref{fig:logistic} shows a hypothetical logistic function 
+plotted using equation \ref{eq:df:logistic} where before the midpoint 
+the differential normalized number of cases between 
+two consecutives time steps increases, 
+and after the midpoint decreases. 
+The curve reaches a plateau in the maximum value for $n(t)$. 
+In an empirical scenario, the plateau could be achieved 
+if the process that is feeding the curve 
+growth is controlled with the maximum 
+value for $n(t)$ not being reached.
+
+\begin{figure}
+\includegraphics[scale=.625]{logistic.png}
+\caption{Hypothetical normalized logistic function -- 
+curve of equation \ref{eq:df:logistic} with 
+$K=1.0$ and an arbitrary growth rate $r=0.04$; 
+the midpoint coordinates are $(0.5, 0.5)$.
+The $K$ represents a normalized measure where 
+the maximum value is the divisor factor.}
+\label{fig:logistic}
+\end{figure}
+
+We considered $N$ to be the number of infected individuals 
+and choose the logistic function because of its behavior, 
+with an exponential increase at the beginning but slowing down after 
+a  midpoint and reaching a plateau. 
+The same behavior occurs with a virus dissemination when at the 
+beginning it spreads exponentially and it starts to 
+decrease the contamination after some control protocol is implemented, 
+like vaccination or lockdown, 
+or in the worst case scenario when the majority of the population is infected.
+
+\subsection{Estimation}
+
+We postulate that the growth rate $r$ in the logistic function is 
+inversely proportional to the population isolation level $i$ 
+modulated by a constant $\lambda$:
+
+\begin{equation}
+r_{\text{fit}} = {\lambda /\, \overline{i\,}} \Rightarrow \lambda = r_{\text{fit}}\, \overline{i\,}
+\label{eq:lambda}
+\end{equation}
+
+We calculate the constant by multiplying $r_{\text{fit}}$ 
+obtained with the fitting of 
+logistic function and the empirical data by 
+the average isolation level $\overline{i\,}$  
+of all time steps.
+
+The constant calculated using equation \ref{eq:lambda} 
+and isolation level of each time interval $i(t)$ 
+are used to estimate the growth $r(t)$ using the formula:
+
+\begin{equation}
+r(t) = {\lambda\over i(t)}
+\label{eq:rt}
+\end{equation}
+
+A time step $\Delta t$ represents the period of time used to group the data 
+and the period in which the isolation level takes effect over
+ the people's contacts, consequently affecting the SARS-CoV-2 spread. 
+The estimated number of cases $N(t+\Delta t)$ is calculated using
+ equation \ref{eq:exp:logistic}, using $r(t)$ instead of $r(t+\Delta t)$ since 
+the isolation level is inversely proportional to growth rate, we take
+ the previous growth rate to predict the effect in the number of cases after a 
+period of time $\Delta t$:
+
+\begin{equation}
+N(t+\Delta t) = {K \over {1- {(K-N_{m}) \over N} e^{-rt}}}
+\label{eq:exp:delta:logistic}
+\end{equation}
+
+ We compare these results with the empirical data using Pearson correlation.
+ We use a time step $t$ 
+ equals to $5$ days because it was the value with
+ a better correlation between empirical and estimated data. 
+We only use integers as time intervals for days because
+ the variation in the correlation values was not
+ significant to justify handling fractional 
+values  that increases the complexity
+ of code and analysis.
+
+\section{Results}
+
+Figure \ref{fig:fitting} shows the average number of cases per 
+time step in São Paulo State due COVID-19 and 
+the fitting performed using logistic function (equation \ref{eq:exp:delta:logistic}) 
+that proved to be a good approximation to the 
+cumulative growth of number of cases.
+
+It’s striking to notice the consistent increase in the number of cases 
+with the plateau to be achieved when the number of cases reaches $1,105,681$ 
+according to the parameters extracted from fitting.
+
+\begin{figure}
+\includegraphics[scale=.625]{fitting.png}
+\caption{Curve of accumulated number of cases 
+at each time step $t$ and its fitting curve 
+using the logistic function (equation \ref{eq:exp:logistic}) 
+where the parameters obtained from fitting are: 
+$r=0.044, N_m=27,483, K=1,105,681$. 
+The Pearson correlation between the empirical 
+and fitted data is $0.994$ and 
+its {\it p-value\/} is approximately $3\times 10^{-91}$.  
+Other important properties are: 
+number of time $steps=96$, 
+initial $t_{0}="2020/03/01"$ 
+and final $t_{f}="2020/06/22"$ 
+dates.}
+\label{fig:fitting}
+\end{figure}
+
+Figure \ref{fig:estimation} shows the empirical curve again 
+and the estimated number of cases using 
+the fitting parameters K and Nm 
+and the calculation of growth factor $r(t)$ using equation \ref{eq:rt}, 
+where the isolation level $i(t)$ is used, 
+to plug into logistic function (equation \ref{eq:exp:delta:logistic}) 
+and calculate the estimated number of cases $N(t+\Delta t)$.
+
+FIXME: put a and b in the plot
+\begin{figure}
+\centering
+\includegraphics[scale=.625]{estimation.png}
+\caption{a) Curve of accumulated number of cases 
+and the estimation using the logistic 
+function~(equation \ref{eq:exp:delta:logistic}) 
+with the growth factor $r(t)$ obtained from equation~\ref{eq:rt}. 
+The constant $\lambda$ was calculated using equation~\ref{eq:lambda} with 
+$r=0.044$ and \hbox{$\overline{i\,} = 0.438\pm 0.04$}. 
+The Pearson correlation coefficient between empirical and estimated data is $0.99$ 
+and its {\it p-value\/} is approximately \hbox{$2.13\times 10^{-81}$}. 
+b) Average isolation level at each time step $t$. 
+The number of steps, initial and final dates are 
+the same as Figure \ref{fig:fitting}.}
+\label{fig:estimation}
+\end{figure}
+
+We noticed at the beginning of the curve in Figure \ref{fig:estimation}b, high values of isolation levels. 
+At that moment, the São Paulo State government adopted more strict rules to avoid circulation of people. 
+It was issued from March 16th and March 22nd a decree to encourage home-based working whenever possible, 
+closure of schools and non-emergencies commerce\cite{Cruz2020}.
+
+\section{Discussion}
+
+The proposed method to predict the number of infected individuals 
+using the current empirical data and the logistic function proved 
+to be an effective approximation for the infection spread. 
+It’s a simple method and the fact it doesn’t take into account 
+other barriers to the infection spread, like the use of a facial mask, 
+is a good property since it’s very difficult to obtain data about 
+the effect of these important procedures in the number of cases.
+
+The main reason to develop a simple but accurate method to estimate 
+the number of infected individuals using the isolation level is to help 
+in the decision making process related to the control of infection spread. 
+The isolation level is a reliable measure and may be used to predict 
+the desired behavior of the population in time steps and check if the infection 
+is really being controlled, reaching a remission in the near future.
+
+We adopted a simpler method instead of more detailed 
+compartmental models~\cite{Ross1916,Ross1917a,Ross1917b}, 
+e.g. SIR (Susceptible, Infectious, or Recovered), SEIR (Susceptible, Exposed, Infectious, or Recovered) 
+or SEIS (Susceptible, Exposed, Infectious, then Susceptible again), due the following reasons: 
+a) The number of infected individuals is very small when compared with population if there is 
+    an application of approaches to control the virus spread; 
+b) It’s difficult to assess the influence of non-pharmacological approaches and the approximation 
+    used somewhat seems to embed this influence due the high correlation 
+   the empirical and estimated data; 
+c) Birth, death, death due the disease, immigration and emigration rates 
+   are also difficult to measure effectively, even deaths due to the disease 
+   may be contaminated by errors due death certificate misjudgment; 
+d) It’s challenging to assess, in some of these models, the number of 
+    individuals with repeated infections and the gradual loss of acquired 
+    immunity because some aspects of the immunization process is 
+   yet to be unraveled, at least for COVID-19.
+
+Another advantage of our method over the compartmental models is the 
+ reduction of dimensionality to one manageable and reliable dimension, 
+this process is also called feature engineering~\cite{Spieg2019}. 
+This property also facilitates code understanding, maintenance and efficiency. 
+The data is easily updated and the number of days in each time step 
+may be changed in the source code.
+
+For future developments, we visualize the use of Control Theory 
+in the estimation phase~\cite{Stewart2020}. 
+The isolation level and number of cases 
+may be used as process variable and set point, respectively, 
+in a controller like PI (Proportional-Integral) or PID (PI-Derivative), 
+optimizing the system according to some properties. 
+The properties may be the vaccination rate and the vaccines’ stock, 
+number of ICU (Intensive Care Unit) beds in a hospital, 
+and even immunization loss growth rate.
+
+TODO: Search isolation papers to compare
+TODO: read more control theory+covid papers to justify future works
+TODO: Distinguish statistics population from state population
+
+\section{Source code and data availability}
+Source code and data required to reproduce the results 
+obtained in this study are available at
+\url{https://github.com/aholanda/pandiso}.
+
+\bibliography{refs}
+
+\end{document}
