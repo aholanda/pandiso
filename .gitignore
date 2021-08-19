@@ -8,6 +8,7 @@ dados_covid_sp.csv
 # R
 *.RData
 *.Rhistory
+.Rproj.user
 
 # RStudio
 *.nb.html
@@ -16,7 +17,3 @@ pandiso*.md
 
 # Temp files
 *~
-
-# Preprint directory
-preprint
-.Rproj.user
