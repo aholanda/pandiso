@@ -57,7 +57,7 @@
 \author[mymainaddress,mysecondaryaddress]{Adriano J.\ Holanda}
 \ead{aholanda@usp.br}
 
-\address[mymainaddress]{Department of Computing and Mathematics - Faculty of Philosophy, Science and Letters at Ribeirão Preto - University of São Paulo, Ribeirão Preto, São Paulo, Brazil}
+\address[mymainaddress]{Department of Computing and Mathematics - Faculty of Philosophy, Science and Letters at Ribeir\~{a}o Preto - University of S\~{a}o Paulo, Ribeirão Preto, S\~{a}o Paulo, Brazil}
 \address[mysecondaryaddress]{Faculty ``Dr.\ Francisco Maeda'', Ituverava, São Paulo, Brazil}
 
 %\section{Front matter}
@@ -65,41 +65,37 @@
 \begin{abstract}
 We use the logistic function to estimate the number 
 of individuals infected by a virus in a period of time
-using as parameter the average isolation level in a population
+using as parameter the population average isolation level 
 in the previous period of the infection occurrences.
 Each period is composed by a date range in days 
 where the isolation level is supposed to take
 effect over the virus spread over the next 
 date range.
-
-We present a method to calculate the number of individuals 
-infected by a virus in a period of time as 
-an effect of social distancing
-using the logistic function and the average isolation level 
-in the period before that period of time. 
-We use the COVID-19 and isolation level data 
-from São Paulo State, Brazil as sample.  
-The method is divided into two phases: 
-1) the logistic function is fitted against COVID-19 
-empirical data to obtain its parameters; 
+The sample is the \hbox{COVID-19} cases and 
+isolation level data from S\~{a}o Paulo State, Brazil.  
+The proposed method is divided into two phases: 
+1) The logistic function is fitted against \hbox{COVID-19}
+empirical data to obtain the function parameters; 
 2) the fitted paramaters, 
 with the exception of overall growth factor,
  and the average isolation level for all periods of time 
 are used to calculate a constant called $\lambda$ 
-that is used to obtain the logistic growth factor 
-$r(t)$ using the isolation level $i(t)$.
- The number of cases after
-the period of time $n(t+\Delta t)$ is calculated using 
-logistic function and $r(t)$ as an effect
-of people isolation during $\Delta t$. 
-The period of time $\Delta t$ that produces a 
-better correlation between empirical and estimated cases 
-was 5 days. We conclude the method produces a good 
+that is used to obtain the logistic growth factor and
+ isolation level at each time step.
+ The number of cases is estimated using 
+logistic function and the growth factor 
+from previous period of time 
+to obtain the effect of people isolation during the
+elapsed time. 
+The period of time that produces a 
+better correlation between empirical and estimated 
+number of cases is 5 days. 
+We conclude the method produces a good 
 estimation when correlated with the empirical data.
 \end{abstract}
 
 \begin{keyword}
-SARS-CoV-2\sep COVID-19\sep logistic function \sep isolation
+\hbox{SARS-CoV-2}\sep \hbox{COVID-19}\sep logistic function \sep isolation
 \end{keyword}
 
 \end{frontmatter}
@@ -108,7 +104,7 @@ SARS-CoV-2\sep COVID-19\sep logistic function \sep isolation
 
 \section{Introduction}
 
-SARS-CoV-2 is the virus that causes the infection called coronavirus disease (COVID-19). 
+\hbox{SARS-CoV-2} is the virus that causes the infection called coronavirus disease (\hbox{COVID-19}). 
 COVID-19 pandemic control will depend on the coverage of population immunity obtained 
 through infection or vaccination~\cite{WHOa}. The mutants of SARS-Cov-2 impose a challenge in 
 the predictability in the long-term efficacy of the current vaccines. 
@@ -116,7 +112,7 @@ the predictability in the long-term efficacy of the current vaccines.
 to emerging variants that are cross-reactive against all circulating variants~\cite{Harvey2021}. 
 Indeed, a small percentage of population in some countries is immunized against SARS-CoV-2, 
 e.g., only 13.7\% of the population is fully vaccinated in Brazil~\cite{MH2021}.
-The SARS-Cov-2’s variants and its low rate of immunization impose the continuation of 
+The SARS-Cov-2 variants and its low rate of immunization impose the continuation of 
 non-pharmacological approaches: handwashing, use of facial masks and social distancing~\cite{WHOb}. 
 Among these approaches, only social distancing can be measured effectively using 
 communication traces~\cite{Farrahi2014}. 
@@ -378,6 +374,6 @@ Source code and data required to reproduce the results
 obtained in this study are available at
 \url{https://github.com/aholanda/pandiso}.
 
-\bibliography{refs}
+\bibliography{main}
 
 \end{document}
