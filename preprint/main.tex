@@ -135,7 +135,7 @@ as a function of time
 based 
 on the isolation level of the population and 
 observed number of cases. 
-We use S\~{a}o Paulo State, Brazil data as sample, 
+We've chosen the S\~{a}o Paulo State, Brazil data as sample, 
 but the method is simple and generic 
 to apply to any population data. 
 S\~{a}o Paulo is one and the most populous of the 26 states 
@@ -147,21 +147,24 @@ of Brazil's GPD (Gross Domestic Product)
 
 \section{Methods}
 
-\subsection{Data}
+\subsection{Data preparation}
 
 We gathered the number of cases of COVID-19 in S\~{a}o Paulo State, Brazil, from Github 
 repository of ``S\~{a}o Paulo Plan'' (\url{https://github.com/seade-R/dados-covid-sp}) 
 that is a initiative from the state government to organize and process data from COVID-19 
-from all cities of the state. The aim is to help in the decision making to implement public 
-procedures to control the SARS-Cov-2 spread. We fetch the population isolation level data 
-for all state cities also from 
+from all cities of the state. 
+The plan's aim is to help in the decision making along the implemention of public 
+procedures to control the SARS-Cov-2 spread. 
+We also fetched the population isolation level data 
+for all state cities  from 
 ``S\~{a}o Paulo Plan'', but from another site (\url{https://www.saopaulo.sp.gov.br/coronavirus/isolamento/}).
 
-We've developed a script using R programming language to perform the sum of the 
-number of cases and to calculate the average isolation level for all cities per day and to save
- the results in a separate file. We've used the script to process the daily assessment using
- the date steps (days) as an argument to group the data. In each group of days,
- the cases are summed and the isolation levels averaged.
+In order to avoid large discrepancies in the number of cases due delayed notification, 
+ each data point is composed by a group of days where each group is labeled by the most 
+ recent date in the group and all groups have the same number of days. 
+ Each data point contains the sum of number of cases of {COVID-19} and 
+ the average of population isolation levels 
+ in the group.
 
 \subsection{Fitting}
 
@@ -385,8 +388,8 @@ TODO: read more control theory+covid papers to justify future works
 TODO: Distinguish statistics population from state population
 
 \section{Source code and data availability}
-Source code and data required to reproduce the results 
-obtained in this study are available at
+R code and data required to reproduce the analyses 
+and Figures are available from
 \url{https://github.com/aholanda/pandiso}.
 
 \bibliography{main}
