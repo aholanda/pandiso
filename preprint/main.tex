@@ -65,7 +65,7 @@
 \begin{abstract}
 We use the logistic function to estimate the number 
 of individuals infected by a virus in a period of time
-using as parameter the population average isolation level 
+using as parameter the population mean isolation level 
 in the previous period of the infection occurrences.
 Each period is composed by a date range in days 
 where the isolation level is supposed to take
@@ -78,7 +78,7 @@ The proposed method is divided into two phases:
 empirical data to obtain the function parameters; 
 2) the fitted paramaters, 
 with the exception of overall growth factor,
- and the average isolation level for all periods of time 
+ and the mean isolation level for all periods of time 
 are used to calculate a constant called $\lambda$ 
 that is used to obtain the logistic growth factor and
  isolation level at each time step.
@@ -163,7 +163,7 @@ In order to avoid large discrepancies in the number of cases due delayed notific
  each data point is composed by a group of days where each group is labeled by the most 
  recent date in the group and all groups have the same number of days. 
  Each data point contains the sum of number of cases of {COVID-19} and 
- the average of population isolation levels 
+ the mean of population isolation levels 
  in the group.
 
 \subsection{Fitting}
@@ -235,7 +235,7 @@ r_{\text{fit}} = {\lambda /\, \overline{i\,}} \Rightarrow \lambda = r_{\text{fit
 We calculate the constant by multiplying $r_{\text{fit}}$ 
 obtained with the fitting of 
 logistic function and the empirical data by 
-the average isolation level $\overline{i\,}$  
+the mean isolation level $\overline{i\,}$  
 of all time steps.
 
 The constant calculated using equation \ref{eq:lambda} 
@@ -273,7 +273,7 @@ values  that increases the complexity
 
 \section{Results}
 
-Figure \ref{fig:fitting} shows the average number of cases per 
+Figure \ref{fig:fitting} shows the mean number of cases per 
 time step in São Paulo State due COVID-19 and 
 the fitting performed using logistic function (equation \ref{eq:exp:delta:logistic}) 
 that proved to be a good approximation to the 
@@ -321,7 +321,7 @@ The constant $\lambda$ was calculated using equation~\ref{eq:lambda} with
 $r=0.044$ and \hbox{$\overline{i\,} = 0.438\pm 0.04$}. 
 The Pearson correlation coefficient between empirical and estimated data is $0.99$ 
 and its {\it p-value\/} is approximately \hbox{$2.13\times 10^{-81}$}. 
-b) Average isolation level at each time step $t$. 
+b) mean isolation level at each time step $t$. 
 The number of steps, initial and final dates are 
 the same as Figure \ref{fig:fitting}.}
 \label{fig:estimation}
