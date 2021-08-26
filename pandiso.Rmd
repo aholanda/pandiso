@@ -4,6 +4,49 @@ author: "Adriano J. Holanda"
 output: html_notebook
 ---
 
+# Preface
+
+```{r}
+library(ggplot2)
+library(testit)
+# SYSTEM variables and functions
+## Directory where the manuscript (preprint) is located
+pandiso.preprint.dir <- "preprint"
+## File extension for plots
+pandiso.plot.ext <- ".png"
+
+pandiso.file.path <- function(fn) {
+  # getwd() returns the current working directory.
+  fp <- file.path(getwd(), fn);
+  return(fp)
+}
+
+# Assign TRUE to update plots in the preprint directory
+pandiso.update.preprint.plots <- FALSE
+pandiso.plot.write <- function(file_prefix, plt) {
+  assert("1st parameter is file prefix string", 
+         typeof(file_prefix) == "character")
+  
+  fn <- file.path(pandiso.preprint.dir, 
+                  paste(file_prefix, pandiso.plot.ext, sep = ""))
+  fp <- pandiso.file.path(fn)
+  
+  if (pandiso.update.preprint.plots == FALSE) {
+    print(paste("* Didn't write", fp))
+    print("* Assign 'TRUE' to variable 'pandiso.update.preprint.plots' to write it.")
+    return(pandiso.update.preprint.plots)
+  }
+  
+  ggsave(fp)
+  print(paste("* Wrote", fp))
+  return(pandiso.update.preprint.plots)
+}
+
+# DATA variables
+## Time step in days to be used along the R code.
+pandiso.time.step <- 5  # days
+```
+
 # Introduction
 
 The logistic function is used to estimate the number 
@@ -16,6 +59,7 @@ virus spread.
 # Logistic function
 
 ```{r}
+library(ggplot2)
 library(latex2exp)
 # Smooth the line plotted
 require(splines)
@@ -38,16 +82,16 @@ for (i in 1:2) {
 # Create the data frame from logistic output
 df <- data.frame(t=out[,1], y=out[,2])
 # Plot
-xy <- predict(interpSpline(df$t, df$y))
-plot(xy,
-     type = "l",
-     main = "Logistic function",
-     xlab = "t",
-     ylab = "y")
-
+xy <- data.frame(predict(interpSpline(df$t, df$y)))
+p <- ggplot(xy, aes(x, y)) + geom_line() +
+     labs(title = "Logistic function", 
+          x = "t", y = "y\n") +
+      theme_minimal()
+p
 #annotate("text", x=.125, y=.9, 
 #               label=TeX("\\frac{dy}{dt} = r y (1 - y / K)"), 
-#               size=4)
+#              size=4)
+pandiso.plot.write("logistic", p)
 rm(df, i, out, parms, times, t_final, xy, y_initial)
 ```
 # Phase 0 - Data Organization
@@ -58,8 +102,9 @@ simplify the code and calculations. Another justification
 for the discrete values for time is that we are handling 
 approximations for the conditions studied.
 
- The value of `DATE_STEP` was adopted after a set of tests 
- were performed to check which value causes 
+The value of `pandiso.time.step` (see \@ref{preface})
+was adopted after a set of tests 
+were performed to check which value causes 
  a better correlation in the curves 
  for the model and estimated data. 
  This high correlation means that 
@@ -67,12 +112,6 @@ approximations for the conditions studied.
  affects the number of cases in the 
  next time step.
 
-But if you want to test a different time step, 
-here is the place to tweak:
-
-```{r}
-DATE_STEP <- 5 # days.
-```
 
 ## COVID-19 cases
 
@@ -87,12 +126,9 @@ The COVID-19 cases are gathered from
 
 TODO: put an alternate source
 ```{r}
-# Current directory
-WD <- getwd();
-# File with COVID-19 cases
 fn <- "dados_covid_sp.csv"
 # Download the data from original source
-fp <- file.path(WD, fn);
+fp <- pandiso.file.path(fn);
 if (file.exists(fp) == FALSE) {
   download.file(paste("https://raw.githubusercontent.com/seade-R/dados-covid-sp/master/data/", fn, sep = ""), fp)
 }
@@ -125,7 +161,7 @@ then click "Baixar" icon, choose "Tabela de referência cruzada", "Excel" format
 ```{r}
 library(readxl)
 fn <- "Dados.xlsx"
-fp <- file.path(WD, fn)
+fp <- pandiso.file.path(fn)
 df <- read_excel(fp)
 # The isolation level data start at 5th column and the
 # first row is the date, the rest are isolation level 
@@ -165,18 +201,19 @@ is delayed when compared with the case values update.
 # Cases are accumulated along the time
 IS.CUMULATIVE <- TRUE
 # Number of elements in the data frame
-N_TIME_STEPS <- floor(length(dfl[,1]) /  DATE_STEP)
-cases_dt <- vector("numeric", N_TIME_STEPS)
-levels_dt <- vector("numeric", N_TIME_STEPS)
-dates_dt <- vector("character", N_TIME_STEPS)
+pandiso.count.time.steps <- floor(length(dfl[,1]) /  pandiso.time.step)
+n <- pandiso.count.time.steps
+cases_dt <- vector("numeric", n)
+levels_dt <- vector("numeric", n)
+dates_dt <- vector("character", n)
 # Find the intersection of dates to avoid mismatch.
 dates <- intersect(as.character(dfc[,"date"]), as.character(dfl[,"date"]))
-for (i in 1:N_TIME_STEPS) {
+for (i in 1:n) {
   # Time step [inf, sup]
   # time lower bound
-  inf <- DATE_STEP * (i-1) + 1
+  inf <- pandiso.time.step * (i-1) + 1
   # time upper bound
-  sup <- DATE_STEP*i
+  sup <- pandiso.time.step * i
   
   # Date interval is marked by the upper bound
   dates_dt[i] <- dates[sup]
@@ -194,7 +231,7 @@ dfdt = data.frame(date=dates_dt, empirical=cases_dt, level=levels_dt)
 times <- seq(from=1, to=length(dfdt$level), by=1)
 dfdt$time <- times
 # Clean up some variables not needed anymore
-rm(cases_dt, dates, dates_dt, dfl, dfc, i, levels_dt, times)
+rm(cases_dt, dates, dates_dt, i, levels_dt, n, times)
 ```
 
 # Phase 1 - Fitting
@@ -221,23 +258,23 @@ logistic.model <- nlsLM(y ~ (K/ (1 + ((K-m)/m)*exp(- r * x))),
                         data = temp, 
                         start = list(K = 1, m=1, r = 0.1))
 summary(logistic.model)
-fitting <- predict(logistic.model, list(x = temp$x))
-dfdt$fitting <- fitting
-rm(fitting)
+fit <- predict(logistic.model, list(x = temp$x))
+dfdt$fit <- fit
+rm(fit)
 
 # Plot
-plot(temp$x, temp$y, xlab = "time", ylab = "cases", 
-     main = paste("Fitting of empirical data using", DATE_STEP, "days as date step"))
-logistic.model <- nlsLM(y ~ (k / (1 + ((k-m)/m)*exp(- r * x))), data = temp, start = list(k = 1, m=1, r = 0.1))
-ys_model <- predict(logistic.model, list(x = temp$x))
-lines(temp$x, ys_model)
+p <- ggplot(dfdt) + geom_point(aes(time, empirical)) +
+     geom_line(aes(time, fit)) +
+     labs(title = paste("Fitting of empirical data using", pandiso.time.step, "days as time step"),
+          x = "time", y= "cases")
+p
+pandiso.plot.write("fit", p)
 
 # TODO: review plot title
 # TODO: rethink correlation method
 
 # Test the correlation of the empirical data and the model
-cor.test(temp$y, dfdt$fitting, method=c("pearson"))
-rm(ys_model)
+cor.test(dfdt$empirical, dfdt$fit, method=c("pearson"))
 ```
 # Phase 2 - Estimating
 
