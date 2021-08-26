@@ -87,12 +87,12 @@ p <- ggplot(xy, aes(x, y)) + geom_line() +
      labs(title = "Logistic function", 
           x = "t", y = "y\n") +
       theme_minimal()
-p
 #annotate("text", x=.125, y=.9, 
 #               label=TeX("\\frac{dy}{dt} = r y (1 - y / K)"), 
 #              size=4)
 pandiso.plot.write("logistic", p)
-rm(df, i, out, parms, times, t_final, xy, y_initial)
+pandiso.logistic.plot <- p
+rm(df, df.logistic, i, out, p, parms, times, t_final, xy, y_initial)
 ```
 # Phase 0 - Data Organization
 
@@ -128,7 +128,8 @@ TODO: put an alternate source
 ```{r}
 fn <- "dados_covid_sp.csv"
 # Download the data from original source
-fp <- pandiso.file.path(fn);
+pandiso.cases.file.path <- pandiso.file.path(fn);
+fp <- pandiso.cases.file.path
 if (file.exists(fp) == FALSE) {
   download.file(paste("https://raw.githubusercontent.com/seade-R/dados-covid-sp/master/data/", fn, sep = ""), fp)
 }
@@ -141,7 +142,7 @@ names(dfc)[names(dfc) == "datahora"] <- "date"
 names(dfc)[names(dfc) == "casos_novos"] <- "cases"
 # Convert date string to date Class
 dfc$date <- as.Date(dfc$date)
-rm(fn)
+rm(fp, fn)
 ```
 
 ## Population isolation level
@@ -161,7 +162,8 @@ then click "Baixar" icon, choose "Tabela de referência cruzada", "Excel" format
 ```{r}
 library(readxl)
 fn <- "Dados.xlsx"
-fp <- pandiso.file.path(fn)
+pandiso.isolation.file.path <- pandiso.file.path(fn)
+fp <- pandiso.isolation.file.path
 df <- read_excel(fp)
 # The isolation level data start at 5th column and the
 # first row is the date, the rest are isolation level 
@@ -183,7 +185,7 @@ for (j in (shift+1):ncol(df)) {
   values[j-shift] <- mean(tmps[good])
 }
 dfl <- data.frame(date=as.Date(dates), level=values)
-rm(fn, good, j, shift, tmp, tmps, values)
+rm(fn, fp, good, j, shift, tmp, tmps, values)
 ```
 
 ## Processing
@@ -199,7 +201,8 @@ is delayed when compared with the case values update.
 
 ```{r}
 # Cases are accumulated along the time
-IS.CUMULATIVE <- TRUE
+pandiso.cases.are.accumulated <- TRUE
+is_cumul <- pandiso.cases.are.accumulated
 # Number of elements in the data frame
 pandiso.count.time.steps <- floor(length(dfl[,1]) /  pandiso.time.step)
 n <- pandiso.count.time.steps
@@ -220,7 +223,7 @@ for (i in 1:n) {
   # The levels are averaged
   levels_dt[i] <- mean(dfl[dfl$date >= dates[inf] & dfl$date <= dates[sup],]$level)
   
-  if (IS.CUMULATIVE == TRUE) {
+  if (is_cumul == TRUE) {
     inf <- 1
   }
   # The cases are summed since from the first case if IS.CUMULATIVE is TRUE
@@ -230,8 +233,13 @@ dfdt = data.frame(date=dates_dt, empirical=cases_dt, level=levels_dt)
 # Add time steps to data frame
 times <- seq(from=1, to=length(dfdt$level), by=1)
 dfdt$time <- times
+rm(times)
+# Total number of dates, remembering the dates considered
+# as marks are in steps of pandiso.time.step value.
+pandiso.count.total.dates <- sup
+
 # Clean up some variables not needed anymore
-rm(cases_dt, dates, dates_dt, i, levels_dt, n, times)
+rm(cases_dt, dates, dates_dt, i, inf, is_cumul, levels_dt, n, sup)
 ```
 
 # Phase 1 - Fitting
@@ -252,21 +260,23 @@ fitting parameters are used in the estimation phase.
 
 
 ```{r}
+library(ggplot2)
 library(minpack.lm)
-temp <- data.frame(y = dfdt$empirical, x = seq(length(dfdt$empirical)))
+temp <- data.frame(y = dfdt$empirical, x = dfdt$time)
 logistic.model <- nlsLM(y ~ (K/ (1 + ((K-m)/m)*exp(- r * x))), 
                         data = temp, 
                         start = list(K = 1, m=1, r = 0.1))
 summary(logistic.model)
 fit <- predict(logistic.model, list(x = temp$x))
 dfdt$fit <- fit
-rm(fit)
+rm(fit, temp)
 
 # Plot
 p <- ggplot(dfdt) + geom_point(aes(time, empirical)) +
-     geom_line(aes(time, fit)) +
+     geom_line(aes(time, fit), size = 1, col = "gray35") +
      labs(title = paste("Fitting of empirical data using", pandiso.time.step, "days as time step"),
-          x = "time", y= "cases")
+          x = "time", y= "cases") +
+    theme_minimal()
 p
 pandiso.plot.write("fit", p)
 
@@ -275,6 +285,8 @@ pandiso.plot.write("fit", p)
 
 # Test the correlation of the empirical data and the model
 cor.test(dfdt$empirical, dfdt$fit, method=c("pearson"))
+pandiso.fit.plot <- p
+rm(p)
 ```
 # Phase 2 - Estimating
 
@@ -300,7 +312,8 @@ on the previous time step isolation level using:
 $$n(t+dt)= {K \over 1 + ({ K-n_m \over n_m }) e^{−r(t)\, t}}$$
 
 ```{r}
-library(emdbook)  # scinot
+library(ggplot2)
+library(patchwork)
 # Estimation of cases using fitted parameters and 
 # the mean of isolation level at each time step.
 exp.logistic <- function(t, r_t, K, m) {
@@ -309,57 +322,50 @@ exp.logistic <- function(t, r_t, K, m) {
 }
 
 # Calculate the constant alpha
-r_fit <- coef(logistic.model)["r"]
-lamb <- r_fit * mean(dfdt$level)
+pandiso.fit.r <- coef(logistic.model)["r"]
+pandiso.lambda <- pandiso.fit.r * mean(dfdt$level)
 
-K <- coef(logistic.model)["k"]
-m <- coef(logistic.model)["m"]
+pandiso.fit.K <- coef(logistic.model)["K"]
+pandiso.fit.m <- coef(logistic.model)["m"]
 # Estimate the number of cases N(t+dt)
-estimated = vector("numeric", N_TIME_STEPS)
+estimated = vector("numeric", pandiso.count.time.steps)
 # Estimate the first case manually, but not the rest.
 estimated[1] = 1
-for (i in 2:N_TIME_STEPS) {
-  r_t <- lamb/dfdt$level[i]
+for (i in 2:pandiso.count.time.steps) {
+  r_t <- pandiso.lambda/dfdt$level[i]
   # This is t+dt compared with empirical time
-  estimated[i] <- exp.logistic(i, r_t, K, m)
+  estimated[i] <- exp.logistic(i, r_t, pandiso.fit.K, pandiso.fit.m)
 }
 dfdt$estimated <- estimated
 rm(estimated)
 
 # Subplot in 2 rows, same x
-par(mfrow = c(2, 1), mar = c(0, 4.1, 4, 2))
 ## Subplot 1
-plot(dfdt$time, dfdt$empirical, frame.plot = TRUE,
-     axes = FALSE, yaxt = "none",
-     pch = 19, col = 1, xlab = "", ylab = "cases")
+p1 <- ggplot(dfdt) + 
+      geom_point(aes(time, empirical), pch = 19) +
+      geom_point(aes(time, estimated), pch = 19, col = "gray49") +
+      labs(title = paste("Time step=", pandiso.time.step, " days", sep = ""),
+           x = "", y = "cases") +
+      theme_minimal()
 #### add y axis
-axis.scinot(side=2, c(2*10^6, 4*10^6))  # TODO: plug with y values
+#  # TODO: plug with y values
 ### plot another set of points
-points(dfdt$time, dfdt$estimated, pch = 19, col = "gray49")
+
 ### add legend
-legend("topleft", legend = c(names(dfdt)[2], names(dfdt)[6]), 
-       col = c(1, "gray49"), pch = 19, bty = "n")
-title(main = paste("Date step=", DATE_STEP, " days", sep = ""))
-mtext("a)", side = 3, at = -17)
+#legend("topleft", legend = c(names(dfdt)[2], names(dfdt)[6]), 
+#       col = c(1, "gray49"), pch = 19, bty = "n")
 
 ## Subplot 2
-par(mar = c(4, 4.1, 0, 2))
-plot(dfdt$time, dfdt$level, pch = 19, col = "gray35", 
-     axes = FALSE, frame.plot = TRUE,
-     xlab = names(dfdt)[4], ylab = names(dfdt)[3])
-### add legend
-legend("topright", legend = "isolation", 
-       col = "gray35", pch = 19, bty = "y")
-#### add x axis
-axis(side = 1)
-#### add y axis
-axis(side = 2, las = 1)
-### add subplot 2 identifier
-mtext("b)", side = 3, at = -17)
-mtext(paste("time span=[", dfdt$date[1], ", ",dfdt$date[length(dfdt$date)], "]", sep = ""), 
-      side = 3, line = -1, cex=.75)
+p2 <- ggplot(dfdt, aes(time, level)) +
+      geom_point(pch = 19, col = "gray35") +
+      labs(x = "time")
+      theme_minimal()
+     
+pandiso.estimation.plot <- (p1/p2)
+pandiso.estimation.plot
 
+pandiso.plot.write("estimation", pandiso.estimation.plot)
 # Test the correlation of the empirical and estimated data.
 cor.test(dfdt$empirical, dfdt$estimated, method=c("pearson"))
-rm(df)
+rm(i, r_t)
 ```
