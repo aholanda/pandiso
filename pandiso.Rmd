@@ -85,7 +85,7 @@ df <- data.frame(t=out[,1], y=out[,2])
 xy <- data.frame(predict(interpSpline(df$t, df$y)))
 p <- ggplot(xy, aes(x, y)) + geom_line() +
      labs(title = "Logistic function", 
-          x = "t", y = "y\n") +
+          x = "t", y = "n\n") +
       theme_minimal()
 #annotate("text", x=.125, y=.9, 
 #               label=TeX("\\frac{dy}{dt} = r y (1 - y / K)"), 
@@ -94,7 +94,7 @@ pandiso.plot.write("logistic", p)
 pandiso.logistic.plot <- p
 rm(df, df.logistic, i, out, p, parms, times, t_final, xy, y_initial)
 ```
-# Phase 0 - Data Organization
+# Stage 0 - Data Organization
 
 The data are processed in periods of time, we use days as 
 unit for time and avoid the use of fractional values to 
@@ -242,7 +242,7 @@ pandiso.count.total.dates <- sup
 rm(cases_dt, dates, dates_dt, i, inf, is_cumul, levels_dt, n, sup)
 ```
 
-# Phase 1 - Fitting
+# Stage 1 - Fitting
 
 Logistic function in the exponential form:
 
@@ -288,7 +288,7 @@ cor.test(dfdt$empirical, dfdt$fit, method=c("pearson"))
 pandiso.fit.plot <- p
 rm(p)
 ```
-# Phase 2 - Estimating
+# Stage 2 - Estimating
 
 The estimation is performed after the calculation of $\lambda$
  is done by:
@@ -367,5 +367,8 @@ pandiso.estimation.plot
 pandiso.plot.write("estimation", pandiso.estimation.plot)
 # Test the correlation of the empirical and estimated data.
 cor.test(dfdt$empirical, dfdt$estimated, method=c("pearson"))
+
+pandiso.date.first <- dfdt[1, "date"]
+pandiso.date.last <- dfdt[length(dfdt$date), "date"]
 rm(i, r_t)
 ```
