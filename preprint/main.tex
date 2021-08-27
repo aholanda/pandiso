@@ -149,28 +149,40 @@ of Brazil's GPD (Gross Domestic Product)
 
 \subsection{Data preparation}
 
-We gathered the number of cases of COVID-19 in S\~{a}o Paulo State, Brazil, from Github 
-repository of ``S\~{a}o Paulo Plan'' (\url{https://github.com/seade-R/dados-covid-sp}) 
-that is a initiative from the state government to organize and process data from COVID-19 
+We gathered the number of cases of COVID-19 
+in S\~{a}o Paulo State, Brazil, 
+from Github repository of ``S\~{a}o Paulo Plan'' 
+(\url{https://github.com/seade-R/dados-covid-sp}) 
+that is a initiative from the state government 
+to organize and process data related to COVID-19 
 from all cities of the state. 
-The plan's aim is to help in the decision making along the implemention of public 
+The plan aims to help in the decision-making 
+along the implemention of public 
 procedures to control the SARS-Cov-2 spread. 
 We also fetched the population isolation level data 
 for all state cities  from 
-``S\~{a}o Paulo Plan'', but from another site (\url{https://www.saopaulo.sp.gov.br/coronavirus/isolamento/}).
+``S\~{a}o Paulo Plan'', but from another location 
+(\url{https://www.saopaulo.sp.gov.br/coronavirus/isolamento/}).
 
-In order to avoid large discrepancies in the number of cases due delayed notification, 
- each data point is composed by a group of days where each group is labeled by the most 
- recent date in the group and all groups have the same number of days. 
- Each data point contains the sum of number of cases of {COVID-19} and 
+In order to avoid large discrepancies 
+in the number of cases due delayed notification, 
+ each data point is composed by a group of days 
+ where each group is labeled by the most 
+ recent date in the group and 
+ all groups have the same number of days. 
+ Each data point contains the sum of number 
+ of cases of {COVID-19} and 
  the mean of population isolation levels 
- in the group.
+ in the group obtained from all cities 
+ located in the S\~{a}o Paulo State.
 
 \subsection{Fitting}
 
-We choose the logistic function to model the COVID-19 spread behavior. 
-The plot the cumulative number of cases of COVID-19 at each time step 
-was performed and the data was fitted using the solution for the logistic function:
+We choose the logistic function to model 
+the COVID-19 spread behavior. 
+The plot the cumulative number of cases of COVID-19 
+at each time step was performed and 
+the data was fitted using the solution for the logistic function:
 
 \begin{equation}
 {dN \over dt} = r N (1 - {N \over K})
@@ -187,21 +199,23 @@ N(t) = {K \over {1- {(K-N_{m}) \over N} e^{-rt}}}
 \noindent where $K$ is the maximum value reachable by $N$, 
 $N_m$ is the curve midpoint, 
 $r$ is the growth rate 
-and $t$ are the time steps.
+and $t$ is the time.
 
 Figure \ref{fig:logistic} shows a hypothetical logistic function 
 plotted using equation \ref{eq:df:logistic} where before the midpoint 
-the differential normalized number of cases between 
+the number of cases between 
 two consecutives time steps increases, 
 and after the midpoint decreases. 
 The curve reaches a plateau in the maximum value for $n(t)$. 
+The number of cases $n$ and time $t$ are normalized.
 In an empirical scenario, the plateau could be achieved 
 if the process that is feeding the curve 
 growth is controlled with the maximum 
 value for $n(t)$ not being reached.
 
 \begin{figure}
-\includegraphics[scale=.625]{logistic.png}
+\centering
+\includegraphics[scale=.425]{logistic.png}
 \caption{Hypothetical normalized logistic function -- 
 curve of equation \ref{eq:df:logistic} with 
 $K=1.0$ and an arbitrary growth rate $r=0.04$; 
@@ -273,32 +287,34 @@ values  that increases the complexity
 
 \section{Results}
 
-Figure \ref{fig:fitting} shows the mean number of cases per 
+Figure \ref{fig:fit} shows the mean number of cases per 
 time step in São Paulo State due COVID-19 and 
-the fitting performed using logistic function (equation \ref{eq:exp:delta:logistic}) 
+the fitting performed using logistic function~(equation~\ref{eq:exp:delta:logistic}) 
 that proved to be a good approximation to the 
 cumulative growth of number of cases.
 
-It’s striking to notice the consistent increase in the number of cases 
-with the plateau to be achieved when the number of cases reaches $1,105,681$ 
+\def\plateau{6,048,050} It`s striking to notice the consistent increase in the number of cases 
+with the plateau to be achieved when the number of cases reaches $\plateau$ 
 according to the parameters extracted from fitting.
 
+
 \begin{figure}
-\includegraphics[scale=.625]{fitting.png}
+\centering
+\includegraphics[scale=.55]{fit.png}
 \caption{Curve of accumulated number of cases 
 at each time step $t$ and its fitting curve 
 using the logistic function (equation \ref{eq:exp:logistic}) 
 where the parameters obtained from fitting are: 
-$r=0.044, N_m=27,483, K=1,105,681$. 
+$r=0.043$, $N_m=138,380$, $K=\plateau$. 
 The Pearson correlation between the empirical 
-and fitted data is $0.994$ and 
-its {\it p-value\/} is approximately $3\times 10^{-91}$.  
-Other important properties are: 
-number of time $steps=96$, 
-initial $t_{0}="2020/03/01"$ 
-and final $t_{f}="2020/06/22"$ 
+and fitted data is $0.996$ and 
+ $\text{p-value} < 2.2\times 10^{-16}$.  
+Other measures are
+the number of time $steps=105$, 
+initial $t_{0}=$``2020/03/01''
+and final $t_{f}=$``2020/08/06'' 
 dates.}
-\label{fig:fitting}
+\label{fig:fit}
 \end{figure}
 
 Figure \ref{fig:estimation} shows the empirical curve again 
@@ -307,12 +323,11 @@ the fitting parameters K and Nm
 and the calculation of growth factor $r(t)$ using equation \ref{eq:rt}, 
 where the isolation level $i(t)$ is used, 
 to plug into logistic function (equation \ref{eq:exp:delta:logistic}) 
-and calculate the estimated number of cases $N(t+\Delta t)$.
+and calculate the estimated number of cases $N(t+1)$.
 
-FIXME: put a and b in the plot
 \begin{figure}
 \centering
-\includegraphics[scale=.625]{estimation.png}
+\includegraphics[scale=.525]{estimation.png}
 \caption{a) Curve of accumulated number of cases 
 and the estimation using the logistic 
 function~(equation \ref{eq:exp:delta:logistic}) 
@@ -320,16 +335,19 @@ with the growth factor $r(t)$ obtained from equation~\ref{eq:rt}.
 The constant $\lambda$ was calculated using equation~\ref{eq:lambda} with 
 $r=0.044$ and \hbox{$\overline{i\,} = 0.438\pm 0.04$}. 
 The Pearson correlation coefficient between empirical and estimated data is $0.99$ 
-and its {\it p-value\/} is approximately \hbox{$2.13\times 10^{-81}$}. 
+and $\text{p-value} < 2.2\times 10^{-16}$. 
 b) mean isolation level at each time step $t$. 
 The number of steps, initial and final dates are 
-the same as Figure \ref{fig:fitting}.}
+the same as Figure \ref{fig:fit}.}
 \label{fig:estimation}
 \end{figure}
 
-We noticed at the beginning of the curve in Figure \ref{fig:estimation}b, high values of isolation levels. 
-At that moment, the São Paulo State government adopted more strict rules to avoid circulation of people. 
-It was issued from March 16th and March 22nd a decree to encourage home-based working whenever possible, 
+We noticed at the beginning of the curve in 
+Figure~\ref{fig:estimation}b, high values of isolation levels. 
+At that moment, the S\~{a}o Paulo State government 
+adopted more strict rules to avoid circulation of people. 
+It was issued from March 16th and March 22nd a decree 
+to encourage home-based working whenever possible, 
 closure of schools and non-emergencies commerce\cite{Cruz2020}.
 
 \section{Discussion}
@@ -337,9 +355,9 @@ closure of schools and non-emergencies commerce\cite{Cruz2020}.
 The proposed method to predict the number of infected individuals 
 using the current empirical data and the logistic function proved 
 to be an effective approximation for the infection spread. 
-It’s a simple method and the fact it doesn’t take into account 
+It's a simple method and the fact it doesn't take into account 
 other barriers to the infection spread, like the use of a facial mask, 
-is a good property since it’s very difficult to obtain data about 
+is a good property since it's very difficult to obtain data about 
 the effect of these important procedures in the number of cases.
 
 The main reason to develop a simple but accurate method to estimate 
@@ -355,13 +373,13 @@ e.g. SIR (Susceptible, Infectious, or Recovered), SEIR (Susceptible, Exposed, In
 or SEIS (Susceptible, Exposed, Infectious, then Susceptible again), due the following reasons: 
 a) The number of infected individuals is very small when compared with population if there is 
     an application of approaches to control the virus spread; 
-b) It’s difficult to assess the influence of non-pharmacological approaches and the approximation 
+b) It's difficult to assess the influence of non-pharmacological approaches and the approximation 
     used somewhat seems to embed this influence due the high correlation 
    the empirical and estimated data; 
 c) Birth, death, death due the disease, immigration and emigration rates 
    are also difficult to measure effectively, even deaths due to the disease 
    may be contaminated by errors due death certificate misjudgment; 
-d) It’s challenging to assess, in some of these models, the number of 
+d) It's challenging to assess, in some of these models, the number of 
     individuals with repeated infections and the gradual loss of acquired 
     immunity because some aspects of the immunization process is 
    yet to be unraveled, at least for COVID-19.
