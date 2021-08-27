@@ -22,7 +22,7 @@ pandiso.file.path <- function(fn) {
 }
 
 # Assign TRUE to update plots in the preprint directory
-pandiso.update.preprint.plots <- FALSE
+pandiso.update.preprint.plots <- TRUE
 pandiso.plot.write <- function(file_prefix, plt) {
   assert("1st parameter is file prefix string", 
          typeof(file_prefix) == "character")
@@ -273,9 +273,9 @@ rm(fit, temp)
 
 # Plot
 p <- ggplot(dfdt) + geom_point(aes(time, empirical)) +
-     geom_line(aes(time, fit), size = 1, col = "gray35") +
+     geom_line(aes(time, fit), size = 1, col = "gray50") +
      labs(title = paste("Fitting of empirical data using", pandiso.time.step, "days as time step"),
-          x = "time", y= "cases") +
+          x = "time", y= "accumulated cases") +
     theme_minimal()
 p
 pandiso.plot.write("fit", p)
@@ -314,6 +314,7 @@ $$n(t+dt)= {K \over 1 + ({ K-n_m \over n_m }) e^{−r(t)\, t}}$$
 ```{r}
 library(ggplot2)
 library(patchwork)
+library(reshape2)
 # Estimation of cases using fitted parameters and 
 # the mean of isolation level at each time step.
 exp.logistic <- function(t, r_t, K, m) {
@@ -340,25 +341,24 @@ dfdt$estimated <- estimated
 rm(estimated)
 
 # Subplot in 2 rows, same x
-## Subplot 1
-p1 <- ggplot(dfdt) + 
-      geom_point(aes(time, empirical), pch = 19) +
-      geom_point(aes(time, estimated), pch = 19, col = "gray49") +
-      labs(title = paste("Time step=", pandiso.time.step, " days", sep = ""),
-           x = "", y = "cases") +
-      theme_minimal()
-#### add y axis
-#  # TODO: plug with y values
-### plot another set of points
+## Subplot 1 - time x empirical+estimated
+### Melt the desired data to plot
+dfm <- melt(data.frame(time = dfdt$time, empirical = dfdt$empirical, 
+                       estimated = dfdt$estimated), id = "time")
+p1 <- ggplot(data = dfm, aes(x = time, y = value, color = variable)) + 
+      geom_point(pch = 19) +
+      scale_color_manual(labels = unique(dfm$variable), values = c("black", "grey60")) + 
+      labs(x = "", y = "accumulated cases", color = "", tag = "a)") +
+      theme_minimal() +
+      theme(axis.title.x = element_blank(), axis.text.x = element_blank(),
+            legend.position = c(0.1, 0.675),  
+            legend.background = element_rect(fill = "white", color = "black"),
+            legend.title=element_blank())
 
-### add legend
-#legend("topleft", legend = c(names(dfdt)[2], names(dfdt)[6]), 
-#       col = c(1, "gray49"), pch = 19, bty = "n")
-
-## Subplot 2
+## Subplot 2 - time x mean isolation level
 p2 <- ggplot(dfdt, aes(time, level)) +
-      geom_point(pch = 19, col = "gray35") +
-      labs(x = "time")
+      geom_point(pch = 19, col = "gray40") +
+      labs(x = "time", y = "mean isolation level", tag = "b)") + 
       theme_minimal()
      
 pandiso.estimation.plot <- (p1/p2)
