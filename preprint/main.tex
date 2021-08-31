@@ -46,6 +46,10 @@
 \bibliographystyle{elsarticle-num}
 %%%%%%%%%%%%%%%%%%%%%%%
 
+% This file is written by R to set some values to 
+% TeX macros.
+\input macros
+
 \begin{document}
 
 \begin{frontmatter}
@@ -58,40 +62,41 @@
 \ead{aholanda@usp.br}
 
 \address[mymainaddress]{Department of Computing and Mathematics - Faculty of Philosophy, Science and Letters at Ribeir\~{a}o Preto - University of S\~{a}o Paulo, Ribeirão Preto, S\~{a}o Paulo, Brazil}
-\address[mysecondaryaddress]{Faculty ``Dr.\ Francisco Maeda'', Ituverava, São Paulo, Brazil}
+\address[mysecondaryaddress]{Faculty ``Dr.\ Francisco Maeda'', Ituverava, S\~{a}o Paulo, Brazil}
 
 %\section{Front matter}
 
 \begin{abstract}
 We use the logistic function to estimate the number 
 of individuals infected by a virus in a period of time
-using as parameter the population mean isolation level 
+taking as parameter the mean of social isolation level 
 in the previous period of the infection occurrences.
 Each period is composed by a date range in days 
-where the isolation level is supposed to take
-effect over the virus spread over the next 
+where the social isolation is supposed to take
+effect over the virus spread in the next 
 date range.
 The sample is the \hbox{COVID-19} cases and 
-isolation level data from S\~{a}o Paulo State, Brazil.  
-The proposed method is divided into two phases: 
+social isolation level data from S\~{a}o Paulo State, Brazil.  
+The proposed method is divided into two stages: 
 1) The logistic function is fitted against \hbox{COVID-19}
 empirical data to obtain the function parameters; 
 2) the fitted paramaters, 
 with the exception of overall growth factor,
- and the mean isolation level for all periods of time 
-are used to calculate a constant called $\lambda$ 
-that is used to obtain the logistic growth factor and
- isolation level at each time step.
- The number of cases is estimated using 
-logistic function and the growth factor 
+ and the mean of social isolation level for all periods of time 
+are used to calculate a constant called $\lambda$.
+We use $\lambda$ and the isolation level at each 
+time step to calculalate the logistic growth factor 
+as a function of time steps.
+ The number of cases in a period is estimated using 
+the logistic function and the growth factor 
 from previous period of time 
-to obtain the effect of people isolation during the
+to obtain the effect of social isolation during the
 elapsed time. 
-The period of time that produces a 
+The period of time that produced a 
 better correlation between empirical and estimated 
-number of cases is 5 days. 
-We conclude the method produces a good 
-estimation when correlated with the empirical data.
+number of cases was 5 days. 
+We conclude the method perfoms an estimation that has 
+a high correlation with the empirical data.
 \end{abstract}
 
 \begin{keyword}
@@ -149,7 +154,7 @@ of Brazil's GPD (Gross Domestic Product)
 
 \subsection{Data preparation}
 
-We gathered the number of cases of COVID-19 
+We gathered the number of cases of \hbox{COVID-19}
 in S\~{a}o Paulo State, Brazil, 
 from Github repository of ``S\~{a}o Paulo Plan'' 
 (\url{https://github.com/seade-R/dados-covid-sp}) 
@@ -158,10 +163,10 @@ to organize and process data related to COVID-19
 from all cities of the state. 
 The plan aims to help in the decision-making 
 along the implemention of public 
-procedures to control the SARS-Cov-2 spread. 
-We also fetched the population isolation level data 
+procedures to control the \hbox{SARS-Cov-2} spread. 
+We also fetched the social isolation level data 
 for all state cities  from 
-``S\~{a}o Paulo Plan'', but from another location 
+``S\~{a}o Paulo Plan'', but from another web address 
 (\url{https://www.saopaulo.sp.gov.br/coronavirus/isolamento/}).
 
 In order to avoid large discrepancies 
@@ -171,7 +176,7 @@ in the number of cases due delayed notification,
  recent date in the group and 
  all groups have the same number of days. 
  Each data point contains the sum of number 
- of cases of {COVID-19} and 
+ of cases of \hbox{COVID-19} and 
  the mean of population isolation levels 
  in the group obtained from all cities 
  located in the S\~{a}o Paulo State.
@@ -179,8 +184,8 @@ in the number of cases due delayed notification,
 \subsection{Fitting}
 
 We choose the logistic function to model 
-the COVID-19 spread behavior. 
-The plot the cumulative number of cases of COVID-19 
+the \hbox{SARS-Cov-2} spread behavior. 
+The plot the cumulative number of cases of \hbox{COVID-19}
 at each time step was performed and 
 the data was fitted using the solution for the logistic function:
 
@@ -293,8 +298,9 @@ the fitting performed using logistic function~(equation~\ref{eq:exp:delta:logist
 that proved to be a good approximation to the 
 cumulative growth of number of cases.
 
-\def\plateau{6,048,050} It`s striking to notice the consistent increase in the number of cases 
-with the plateau to be achieved when the number of cases reaches $\plateau$ 
+It`s striking to notice the consistent increase in the number of cases 
+with the plateau to be achieved when the number of cases reaches 
+$\pgfkeysvalueof{/pandiso/fit/K}$ 
 according to the parameters extracted from fitting.
 
 
@@ -305,14 +311,16 @@ according to the parameters extracted from fitting.
 at each time step $t$ and its fitting curve 
 using the logistic function (equation \ref{eq:exp:logistic}) 
 where the parameters obtained from fitting are: 
-$r=0.043$, $N_m=138,380$, $K=\plateau$. 
+$r=\pgfkeysvalueof{/pandiso/fit/r}$, 
+$N_m=\pgfkeysvalueof{/pandiso/fit/m}$, 
+$K=\pgfkeysvalueof{/pandiso/fit/K}$. 
 The Pearson correlation between the empirical 
-and fitted data is $0.996$ and 
+and fitted data is $\pgfkeysvalueof{/pandiso/fit/pearson}$ and 
  $\text{p-value} < 2.2\times 10^{-16}$.  
 Other measures are
-the number of time $steps=105$, 
-initial $t_{0}=$``2020/03/01''
-and final $t_{f}=$``2020/08/06'' 
+the number of time $steps=\pgfkeysvalueof{/pandiso/count/time/steps}$, 
+initial $t_{0}=$``\pgfkeysvalueof{/pandiso/date/first}''
+and final $t_{f}=$``\pgfkeysvalueof{/pandiso/date/last}'' 
 dates.}
 \label{fig:fit}
 \end{figure}
@@ -333,8 +341,11 @@ and the estimation using the logistic
 function~(equation \ref{eq:exp:delta:logistic}) 
 with the growth factor $r(t)$ obtained from equation~\ref{eq:rt}. 
 The constant $\lambda$ was calculated using equation~\ref{eq:lambda} with 
-$r=0.044$ and \hbox{$\overline{i\,} = 0.438\pm 0.04$}. 
-The Pearson correlation coefficient between empirical and estimated data is $0.99$ 
+$r=\pgfkeysvalueof{/pandiso/fit/r}$ 
+and $\overline{i\,} = \pgfkeysvalueof{/pandiso/overall/level/mean} 
+ \pm \pgfkeysvalueof{/pandiso/overall/level/stdev}$. 
+The Pearson correlation coefficient between empirical and estimated data is 
+$\pgfkeysvalueof{/pandiso/estimation/pearson}$ 
 and $\text{p-value} < 2.2\times 10^{-16}$. 
 b) mean isolation level at each time step $t$. 
 The number of steps, initial and final dates are 
