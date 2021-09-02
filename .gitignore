@@ -15,5 +15,8 @@ dados_covid_sp.csv
 *.Rproj.user
 pandiso*.md
 
+# VS Code
+.vscode
+
 # Temp files
 *~
