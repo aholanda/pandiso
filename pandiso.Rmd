@@ -75,6 +75,9 @@ pandiso.write.TeX_macros <- function() {
   tex <- paste(tex,"\t/pandiso/overall/level/stdev/.initial=", 
                format(pandiso.overall.level.stdev, digits = 1, nsmall = 3), 
                ",%\n", sep = "")  
+ tex <- paste(tex,"\t/pandiso/time/step/.initial=", 
+               format(pandiso.time.step, digits = 1, nsmall = 0), 
+               ",%\n", sep = "")  
   tex <- paste(tex, "}%", sep = "")
   writeLines(tex, fp)
   return(pandiso.update.preprint)
