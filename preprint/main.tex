@@ -111,13 +111,13 @@ a high correlation with the empirical data.
 
 \section{Introduction}
 
-\sarscov\ is the virus that causes the infection 
+SARS-CoV-2 is the virus that causes the infection 
 called coronavirus disease (\covid). 
 \covid\ pandemic control will depend 
 on the coverage of population immunity obtained 
 through infection or vaccination~\cite{WHOa}. 
-The mutants of \sarscov\ impose a challenge in 
-the predictability in the long-term efficacy 
+The mutants of \sarscov\ impose a 
+predictability challenge in the long-term efficacy 
 of the current vaccines. 
  It's of utmost importance the preparation of updated 
  vaccines tailored to emerging variants that are cross-reactive 
@@ -125,9 +125,9 @@ of the current vaccines.
 Indeed, a small percentage of population in some countries 
 is immunized against \sarscov, 
 \marginpar{TODO: update percentage}
-e.g., only 13.7\% of the population 
+e.g., only 30.6\% of the population 
 is fully vaccinated in Brazil~\cite{MH2021}.
-The \sarscov variants and its low rate of immunization 
+The \sarscov\ variants and its low rate of immunization 
 impose the continuation of non-pharmacological approaches: 
 handwashing, use of facial masks and social distancing~\cite{WHOb}. 
 Among these approaches, only social distancing 
@@ -334,7 +334,7 @@ and ``\pgfkeysvalueof{/pandiso/date/last}'', respectively.}
 
 Figure \ref{fig:estimation} shows the empirical curve again 
 and the estimated number of cases using 
-the fitting parameters K and Nm 
+the fitting parameters $K$ and $N_m$ 
 and the calculation of growth factor $r(t)$ using equation \ref{eq:rt}, 
 where the isolation level $i(t)$ is used, 
 to plug into logistic function (equation \ref{eq:exp:logistic:estimation}) 
@@ -350,7 +350,7 @@ with the growth factor $r(t)$ obtained from equation~\ref{eq:rt}.
 The constant $\lambda$ was calculated using equation~\ref{eq:lambda} with 
 $r=\pgfkeysvalueof{/pandiso/fit/r}$ 
 and $\overline{i\,} = \pgfkeysvalueof{/pandiso/overall/level/mean} 
- \pm \pgfkeysvalueof{/pandiso/overall/level/stdev}$. \marginpar{TODO: test normality}
+ \pm \pgfkeysvalueof{/pandiso/overall/level/stdev}$. 
 The Pearson correlation coefficient between empirical and estimated data is 
 $\pgfkeysvalueof{/pandiso/estimation/pearson}$ 
 and $\text{p-value} < 2.2\times 10^{-16}$. 
@@ -358,7 +358,7 @@ b) mean isolation level at each time step $t$.
 The number of steps, initial and final dates are 
 the same as Figure \ref{fig:fit}.}
 \label{fig:estimation}
-\end{figure}
+\end{figure}\marginpar{TODO: test normality}
 
 We noticed at the beginning of the curve in 
 Figure~\ref{fig:estimation}b, high values of isolation levels. 
@@ -375,8 +375,8 @@ using the current empirical data and the logistic function proved
 to be an effective approximation for the infection spread. 
 It's a simple method and the fact it doesn't take into account 
 other barriers to the infection spread, like the use of a facial mask, 
-is a good property since it's very difficult to obtain data about 
-the effect of these important procedures in the number of cases.
+is a good property since it's very difficult to obtain the correlation about 
+the application of these important procedures and the number of cases.
 
 The main reason to develop a simple but accurate method to estimate 
 the number of infected individuals using the isolation level is to help 
@@ -405,7 +405,8 @@ d) It's challenging to assess, in some of these models, the number of
 Another advantage of our method over the compartmental models is the 
  reduction of dimensionality to one manageable and reliable dimension, 
 this process is also called feature engineering~\cite{Spieg2019}. 
-This property also facilitates code understanding, maintenance and efficiency. 
+This property also facilitates the source code 
+understanding, maintenance and efficiency. 
 The data is easily updated and the number of days in each time step 
 may be changed in the source code.
 
