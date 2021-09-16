@@ -5,10 +5,14 @@ else
     DEV_NULL := 2>/dev/null
 endif
 
+IMGs := estimation.png fit.png logistic.png
 LATEX := xelatex
 
-main.pdf: main.tex main.bib
+all: main.tex main.bib $(IMGs)
 	$(LATEX) $< && bibtex $(patsubst %.tex,%,$<) && $(LATEX) $< && $(LATEX) $<	
+
+main.pdf: main.tex $(IMGs)
+	$(LATEX) $<
 
 clean:
 	$(RM) *.aux *.bbl *.blg *.log *.out *.spl $(DEV_NULL)
@@ -16,4 +20,4 @@ clean:
 	$(RM) *~ $(DEV_NULL)
 	$(RM) $$null
 
-.PHONY: clean
+.PHONY: all clean
