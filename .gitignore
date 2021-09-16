@@ -18,5 +18,8 @@ pandiso*.md
 # VS Code
 .vscode
 
+# Latexmk
+*.synctex.gz
+
 # Temp files
 *~
