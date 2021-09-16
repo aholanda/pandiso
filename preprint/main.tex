@@ -83,14 +83,14 @@ The proposed method is divided into two stages:
 1) The logistic function is fitted against \covid\ 
 empirical data to obtain the function parameters; 
 2) the function parameters, 
- except for the overall growth factor,
+ except for the overall growth rate,
  and the mean of social isolation level for all periods of time 
 are used to calculate a constant called $\lambda$.
-The logistic growth factor for each period of time
+The logistic growth rate for each period of time
 is calculated using $\lambda$ 
 and the isolation level for that period.
  The number of cases in a period is estimated using 
-the logistic function and the growth factor 
+the logistic function and the growth rate 
 from previous period of time 
 to obtain the effect of social isolation during the
 elapsed time. 
@@ -265,7 +265,7 @@ logistic function and the empirical data.
 
 The constant calculated using equation \ref{eq:lambda} 
 and isolation level of each time interval $i(t)$ 
-are used to estimate the growth $r(t)$ using the formula:
+are used to estimate the growth rate $r(t)$ using the formula:
 
 \begin{equation}
 r(t) = {\lambda\over i(t)}
@@ -300,8 +300,9 @@ values  that increases the complexity
 
 \section{Results}
 
-Figure \ref{fig:fit} shows the mean number of cases per 
-time step in São Paulo State due \covid\ and 
+Figure \ref{fig:fit} shows the accumlated 
+number of \covid\ cases per 
+time step in São Paulo State and 
 the fitting performed using logistic 
 function~(equation~\ref{eq:exp:logistic:estimation}) 
 that proved to be a good approximation to the 
@@ -335,7 +336,7 @@ and ``\pgfkeysvalueof{/pandiso/date/last}'', respectively.}
 Figure \ref{fig:estimation} shows the empirical curve again 
 and the estimated number of cases using 
 the fitting parameters $K$ and $N_m$ 
-and the calculation of growth factor $r(t)$ using equation \ref{eq:rt}, 
+and the calculation of growth rate $r(t)$ using equation \ref{eq:rt}, 
 where the isolation level $i(t)$ is used, 
 to plug into logistic function (equation \ref{eq:exp:logistic:estimation}) 
 and calculate the estimated number of cases $N(t+1)$.
@@ -346,7 +347,7 @@ and calculate the estimated number of cases $N(t+1)$.
 \caption{a) Curve of accumulated number of cases 
 and the estimation using the logistic 
 function~(equation \ref{eq:exp:logistic:estimation}) 
-with the growth factor $r(t)$ obtained from equation~\ref{eq:rt}. 
+with the growth rate $r(t)$ obtained from equation~\ref{eq:rt}. 
 The constant $\lambda$ was calculated using equation~\ref{eq:lambda} with 
 $r=\pgfkeysvalueof{/pandiso/fit/r}$ 
 and $\overline{i\,} = \pgfkeysvalueof{/pandiso/overall/level/mean} 
@@ -388,16 +389,16 @@ is really being controlled, reaching a remission in an expected time ahead.
 We adopted a simpler method instead of more detailed 
 compartmental models~\cite{Ross1916,Ross1917a,Ross1917b}, 
 e.g. SIR (Susceptible, Infectious, or Recovered), SEIR (Susceptible, Exposed, Infectious, or Recovered) 
-or SEIS (Susceptible, Exposed, Infectious, then Susceptible again), due the following reasons: 
+or SEIS (Susceptible, Exposed, Infectious, then Susceptible again), due to the following reasons: 
 a) The number of infected individuals is very small when compared with population if there is 
     an application of approaches to control the virus spread; 
 b) It's difficult to assess the influence of non-pharmacological approaches and the approximation 
-    used somewhat seems to embed this influence due the high correlation 
+    used somewhat seems to embed this influence due to the high correlation 
    the empirical and estimated data; 
-c) Births, deaths, deaths due the disease, immigration and emigration rates 
+c) Births, deaths, deaths due to the disease, immigration and emigration rates 
    are also difficult to assess effectively in most countries, 
    even deaths due to the disease 
-   may be contaminated by errors due death certificate misjudgment; 
+   may be contaminated by errors related to death certificate misjudgment; 
 d) It's challenging to assess, in some of these models, the number of 
     individuals with repeated infections and the gradual loss of acquired 
     immunity because some aspects of the immunization process is 
