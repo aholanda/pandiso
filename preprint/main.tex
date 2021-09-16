@@ -50,7 +50,7 @@
 % TeX macros.
 \input macros
 \def\covid{\hbox{COVID-19}} % to not forget hbox
-\def\sarscov{\hbox{SARS-CoV-2}}
+\def\sarscov{{SARS-CoV-2}}
 
 \begin{document}
 
@@ -71,9 +71,9 @@
 \begin{abstract}
 We use the logistic function to estimate the number 
 of individuals infected by a virus in a period of time
-as function of the social isolation level 
+as a function of social isolation level 
 in the previous period of the infection occurrences.
-Each period is composed by a date range in days 
+Each period is composed by a fixed date range in days 
 which the social isolation is supposed to take
 effect over the virus spread in the next 
 date range.
@@ -88,7 +88,7 @@ empirical data to obtain the function parameters;
 are used to calculate a constant called $\lambda$.
 The logistic growth factor for each period of time
 is calculated using $\lambda$ 
-and the isolation level from each period.
+and the isolation level for that period.
  The number of cases in a period is estimated using 
 the logistic function and the growth factor 
 from previous period of time 
@@ -96,9 +96,9 @@ to obtain the effect of social isolation during the
 elapsed time. 
 The period of time that produces a 
 better correlation between empirical and estimated 
-data is 5 days. 
-We conclude the method performs an estimation that has 
-a high correlation with the empirical data.
+data was $5$ days. 
+We conclude the method performs a data estimation with  
+ high correlation with the empirical data.
 \end{abstract}
 
 \begin{keyword}
@@ -122,10 +122,10 @@ of the current vaccines.
  It's of utmost importance the preparation of updated 
  vaccines tailored to emerging variants that are cross-reactive 
  against all circulating variants~\cite{Harvey2021}. 
-Indeed, a small percentage of population in some countries 
+Indeed, the minority of the population in some countries 
 is immunized against \sarscov, 
-\marginpar{TODO: update percentage}
-e.g., only 30.6\% of the population 
+% TODO: generalize this point of updated dependency
+e.g., only 35.8\% of the population  
 is fully vaccinated in Brazil~\cite{MH2021}.
 The \sarscov\ variants and its low rate of immunization 
 impose the continuation of non-pharmacological approaches: 
@@ -134,7 +134,7 @@ Among these approaches, only social distancing
 can be assessed effectively using 
 communication traces~\cite{Farrahi2014}. 
  Isolating cases, quarantining contacts and implementing
-large-scale social distancing approaches have been proving to 
+large-scale social distancing approaches have been proved to 
 be effective in the control of virus spread~\cite{Aquino2020}.
 
 In this study, we use the logistic function 
@@ -257,11 +257,11 @@ r_{\text{fit}} = {\lambda /\, \overline{i\,}} \Rightarrow \lambda = r_{\text{fit
 \label{eq:lambda}
 \end{equation}
 
-We calculate the constant by multiplying $r_{\text{fit}}$ 
-obtained with the fitting of 
-logistic function and the empirical data by 
+We calculate the constant by multiplying 
 the mean isolation level $\overline{i\,}$  
-of all time steps.
+of all time steps by 
+$r_{\text{fit}}$ obtained with the fitting of 
+logistic function and the empirical data.
 
 The constant calculated using equation \ref{eq:lambda} 
 and isolation level of each time interval $i(t)$ 
@@ -354,7 +354,7 @@ and $\overline{i\,} = \pgfkeysvalueof{/pandiso/overall/level/mean}
 The Pearson correlation coefficient between empirical and estimated data is 
 $\pgfkeysvalueof{/pandiso/estimation/pearson}$ 
 and $\text{p-value} < 2.2\times 10^{-16}$. 
-b) mean isolation level at each time step $t$. 
+b) Mean isolation level at each time step $t$. 
 The number of steps, initial and final dates are 
 the same as Figure \ref{fig:fit}.}
 \label{fig:estimation}
@@ -376,7 +376,7 @@ to be an effective approximation for the infection spread.
 It's a simple method and the fact it doesn't take into account 
 other barriers to the infection spread, like the use of a facial mask, 
 is a good property since it's very difficult to obtain the correlation about 
-the application of these important procedures and the number of cases.
+the application of these fundamental procedures and the number of cases.
 
 The main reason to develop a simple but accurate method to estimate 
 the number of infected individuals using the isolation level is to help 
@@ -394,8 +394,9 @@ a) The number of infected individuals is very small when compared with populatio
 b) It's difficult to assess the influence of non-pharmacological approaches and the approximation 
     used somewhat seems to embed this influence due the high correlation 
    the empirical and estimated data; 
-c) Birth, death, death due the disease, immigration and emigration rates 
-   are also difficult to measure effectively, even deaths due to the disease 
+c) Births, deaths, deaths due the disease, immigration and emigration rates 
+   are also difficult to assess effectively in most countries, 
+   even deaths due to the disease 
    may be contaminated by errors due death certificate misjudgment; 
 d) It's challenging to assess, in some of these models, the number of 
     individuals with repeated infections and the gradual loss of acquired 
