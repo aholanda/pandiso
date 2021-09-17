@@ -51,6 +51,8 @@
 \input macros
 \def\covid{\hbox{COVID-19}} % to not forget hbox
 \def\sarscov{{SARS-CoV-2}}
+\def\eq#1{Equation~#1}
+\def\fig#1{Figure~#1}
 
 \begin{document}
 
@@ -165,7 +167,7 @@ that is a initiative from the state government
 to organize and process data related to \covid \
 from all cities of the state. 
 The plan aims to help in the decision-making 
-along the implemention of public 
+along the application of public 
 procedures to control the \sarscov\ spread. 
 We also fetched the social isolation level data 
 for all state cities  from 
@@ -178,10 +180,10 @@ in the number of cases due delayed notification,
  which each group is labeled by the most 
  recent date in the group and 
  all groups have the same number of days. 
- All data points contain the sum of number 
- of cases of \covid\ and 
- the mean of population isolation levels 
- in the group obtained from all cities 
+ All data points contain 
+ the sum of the \covid\ cases and 
+ the mean of the population isolation levels 
+ in the group for all cities 
  located in the S\~{a}o Paulo State.
 
 \subsection{Fitting}
@@ -207,8 +209,8 @@ $N_m$ is the curve midpoint,
 $r$ is the growth rate 
 and $t$ is the time.
 
-Figure \ref{fig:logistic} shows a hypothetical logistic function 
-plotted using equation \ref{eq:df:logistic} where before the midpoint 
+\fig{\ref{fig:logistic}} shows a hypothetical logistic function 
+plotted using \eq{\ref{eq:df:logistic}} where before the midpoint 
 the number of cases between 
 two consecutive time steps increases, 
 and after the midpoint decreases. 
@@ -223,7 +225,7 @@ value for $n(t)$ not being reached.
 \centering
 \includegraphics[scale=.425]{logistic.png}
 \caption{Hypothetical normalized logistic function -- 
-curve of equation \ref{eq:df:logistic} with 
+curve of \eq{\ref{eq:df:logistic}} with 
 $K=1.0$ and an arbitrary growth rate $r=0.04$; 
 the midpoint coordinates are $(0.5, 0.5)$.
 The $K$ represents a normalized measure where 
@@ -243,7 +245,7 @@ or in the worst case scenario when the majority of the population is infected.
 
 The graph of the cumulative number of empirical cases of \covid\ 
 at each time step was plotted, 
-and the Equation~\ref{eq:exp:logistic} was fitted against the 
+and the \eq{\ref{eq:exp:logistic}} was fitted against the 
 empirical data.
 
 \subsection{Estimation}
@@ -263,7 +265,7 @@ of all time steps by
 $r_{\text{fit}}$ obtained with the fitting of 
 logistic function and the empirical data.
 
-The constant calculated using equation \ref{eq:lambda} 
+The constant calculated using \eq{\ref{eq:lambda}}
 and isolation level of each time interval $i(t)$ 
 are used to estimate the growth rate $r(t)$ using the formula:
 
@@ -277,13 +279,13 @@ A time step is a period of time in days used to group the
 from the last period takes effect 
  over the \sarscov\ spread. 
 The estimated number of cases $N(t+1)$ is calculated using
- equation \ref{eq:exp:logistic} plugging $r(t)$ instead of $r(t+1)$ because 
+ \eq{\ref{eq:exp:logistic}} plugging $r(t)$ instead of $r(t+1)$ because 
  we take the previous growth rate $r(t)$ 
  to predict the effect in the number of cases 
  after a period of time $N(t+1)$:
 
 \begin{equation}
-N(t+1) = {K \over {1- {(K-N_{m}) \over N} e^{-rt}}}
+N(t+1) = {K \over {1- {(K-N_{m}) \over N} e^{-r(t)\,(t+1)}}}
 \label{eq:exp:logistic:estimation}
 \end{equation}
 
@@ -300,26 +302,26 @@ values  that increases the complexity
 
 \section{Results}
 
-Figure \ref{fig:fit} shows the accumlated 
+\fig{\ref{fig:fit}} shows the accumulated 
 number of \covid\ cases per 
 time step in São Paulo State and 
 the fitting performed using logistic 
-function~(equation~\ref{eq:exp:logistic:estimation}) 
+function~(\eq{~\ref{eq:exp:logistic:estimation}}) 
 that proved to be a good approximation to the 
 cumulative growth of number of cases.
 
-It's striking to notice the consistent increase in the number of cases 
+We notice the consistent increase in the number of cases 
 with the plateau to be achieved when the number of cases reaches 
 $\pandisofitK$ 
 according to the parameters extracted from fitting.
 
 
-\begin{figure}
+\begin{figure}[ht]
 \centering
 \includegraphics[scale=.55]{fit.png}
 \caption{Curve of accumulated number of cases 
 at each time step $t$ and its fitting curve 
-using the logistic function (equation \ref{eq:exp:logistic}) 
+using the logistic function (\eq{\ref{eq:exp:logistic}}) 
 where the parameters obtained from fitting are: 
 $r=\pgfkeysvalueof{/pandiso/fit/r}$, 
 $N_m=\pandisofitm$, 
@@ -333,22 +335,22 @@ and ``\pgfkeysvalueof{/pandiso/date/last}'', respectively.}
 \label{fig:fit}
 \end{figure}
 
-Figure \ref{fig:estimation} shows the empirical curve again 
+\fig{\ref{fig:estimation}} shows the empirical curve again 
 and the estimated number of cases using 
 the fitting parameters $K$ and $N_m$ 
-and the calculation of growth rate $r(t)$ using equation \ref{eq:rt}, 
+and the calculation of growth rate $r(t)$ using \eq{\ref{eq:rt}}, 
 where the isolation level $i(t)$ is used, 
-to plug into logistic function (equation \ref{eq:exp:logistic:estimation}) 
+to plug into logistic function (\eq{\ref{eq:exp:logistic:estimation}}) 
 and calculate the estimated number of cases $N(t+1)$.
 
-\begin{figure}
+\begin{figure}[ht]
 \centering
 \includegraphics[scale=.525]{estimation.png}
 \caption{a) Curve of accumulated number of cases 
 and the estimation using the logistic 
-function~(equation \ref{eq:exp:logistic:estimation}) 
-with the growth rate $r(t)$ obtained from equation~\ref{eq:rt}. 
-The constant $\lambda$ was calculated using equation~\ref{eq:lambda} with 
+function~(\eq{\ref{eq:exp:logistic:estimation}}) 
+with the growth rate $r(t)$ obtained from \eq{\ref{eq:rt}}. 
+The constant $\lambda$ was calculated using \eq{\ref{eq:lambda}} with 
 $r=\pgfkeysvalueof{/pandiso/fit/r}$ 
 and $\overline{i\,} = \pgfkeysvalueof{/pandiso/overall/level/mean} 
  \pm \pgfkeysvalueof{/pandiso/overall/level/stdev}$. 
@@ -357,12 +359,12 @@ $\pgfkeysvalueof{/pandiso/estimation/pearson}$
 and $\text{p-value} < 2.2\times 10^{-16}$. 
 b) Mean isolation level at each time step $t$. 
 The number of steps, initial and final dates are 
-the same as Figure \ref{fig:fit}.}
+the same as \fig{\ref{fig:fit}}.}
 \label{fig:estimation}
 \end{figure}
 
 We noticed at the beginning of the curve in 
-Figure~\ref{fig:estimation}b, high values of isolation levels. 
+\fig{~\ref{fig:estimation}b}, high values of isolation levels. 
 At that moment, the S\~{a}o Paulo State government 
 adopted more strict rules to avoid circulation of people. 
 It was issued from March 16th and March 22nd a decree 
