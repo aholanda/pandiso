@@ -1,7 +1,7 @@
 # Pandemic Isolation
 
 Study to estimate the number of individuals infected by a virus based 
-on population isolation level. The test of the method was performed on 
+on population isolation level. The test of the method was performed using 
 [São Paulo State, Brazil COVID](https://www.saopaulo.sp.gov.br/coronavirus/) 
 [data](https://github.com/seade-R/dados-covid-sp).
 
