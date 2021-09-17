@@ -1,4 +1,7 @@
+# Latexmk
 *latexmk
+
+# LaTeX
 main.aux
 main.bbl
 main.blg
@@ -8,3 +11,5 @@ main.out
 main.pdf
 main.spl
 
+# arXiv file
+pandiso.zip
