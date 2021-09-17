@@ -14,9 +14,18 @@ all: main.tex main.bib macros.tex $(IMGs)
 main.pdf: main.tex macros.tex $(IMGs)
 	$(LATEX) $<
 
+main.aux: main.pdf
+
+main.bbl: main.aux
+	bibtex $<
+
+pandiso.zip: macros.tex main.bbl main.bib main.tex $(IMGs)
+	@zip -r $@ $^
+
 clean:
 	$(RM) *.aux *.bbl *.blg *.log *.out *.spl $(DEV_NULL)
 	$(RM) main.pdf $(DEV_NULL)
+	$(RM) pandiso.zip
 	$(RM) *~ $(DEV_NULL)
 	$(RM) $$null
 
