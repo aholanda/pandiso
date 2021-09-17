@@ -1,17 +1,28 @@
 ---
-title: "Simple method to correlate infection spread and isolation using logistic function"
+title: "Estimating the number of COVID-19 cases from population isolation level"
 author: "Adriano J. Holanda"
 output: html_notebook
 ---
 
 # Preface
 
+All variables and functions have the prefix `pandiso` in the name. 
+
+# System
+
+The system variables and functions handle the current directory 
+value, the manuscript directory and the image format. A function 
+is offered to write the files in the right location and the preprint
+directory (images and macros) is modified only 
+if `pandiso.update.preprint` is assigned to `TRUE`.
+
+
 ```{r}
-library(ggplot2)
-library(testit)
+library(testit)  # assert()
 # SYSTEM variables and functions
 ## Directory where the manuscript (preprint) is located
 pandiso.preprint.dir <- "preprint"
+
 ## File extension for plots
 pandiso.plot.ext <- ".png"
 
@@ -23,6 +34,7 @@ pandiso.file.path <- function(fn) {
 
 # Assign TRUE to update files in the preprint directory
 pandiso.update.preprint <- TRUE
+
 pandiso.write.plot <- function(file_prefix, plt) {
   assert("1st parameter is file prefix string", 
          typeof(file_prefix) == "character")
@@ -41,7 +53,14 @@ pandiso.write.plot <- function(file_prefix, plt) {
   print(paste("* Wrote", fp))
   return(pandiso.update.preprint)
 }
+```
 
+## Macros
+
+The values used in the manuscript are assigned to $\TeX$ macros in a file 
+in the `preprint` directory. 
+
+```{r}
 pandiso.write.TeX_macros <- function() {
   if (pandiso.update.preprint == FALSE)
     return(pandiso.update.preprint)
@@ -83,10 +102,6 @@ pandiso.write.TeX_macros <- function() {
   writeLines(tex, fp)
   return(pandiso.update.preprint)
 }
-
-# DATA variables
-## Time step in days to be used along the R code.
-pandiso.time.step <- 5  # days
 ```
 
 # Introduction
@@ -110,7 +125,7 @@ library(deSolve)
 df.logistic <- function (t, y, parms) {
   list(parms["r"] * y * (1-y/parms["K"]))
 }
-t_final <- 300
+t_final <- 295
 times <- seq(from=1, to=t_final, by=1)
 y_initial <- c(y=1)
 parms <- c(r=0.04, K=350)
@@ -128,10 +143,18 @@ xy <- data.frame(predict(interpSpline(df$t, df$y)))
 p <- ggplot(xy, aes(x, y)) + geom_line() +
      labs(title = "Logistic function", 
           x = "t", y = "n\n") +
-      theme_minimal()
-#annotate("text", x=.125, y=.9, 
-#               label=TeX("\\frac{dy}{dt} = r y (1 - y / K)"), 
-#              size=4)
+    geom_label(
+      aes(label="midpoint", 
+          x=.57,
+          y=.5,
+          label.size = 0.35),
+      color = "black",
+      label.size = NA
+  ) +
+  annotate("point", x = .5, y = .5, colour = "black") +
+  theme_light()
+p
+
 pandiso.write.plot("logistic", p)
 pandiso.logistic.plot <- p
 rm(df, df.logistic, i, out, p, parms, times, t_final, xy, y_initial)
@@ -166,7 +189,6 @@ The COVID-19 cases are gathered from
  [Github repository](https://github.com/seade-R/dados-covid-sp)
  for the initiative.
 
-TODO: put an alternate source
 ```{r}
 fn <- "dados_covid_sp.csv"
 # Download the data from original source
@@ -232,16 +254,24 @@ rm(fn, fp, good, j, shift, tmp, tmps, values)
 
 ## Processing
 
+The time step in days which the data points are grouped 
+must be assigned to `pandiso.time.step` variable.
+
 The sum of cases in a time step (period) are accumulated 
 and the last date of the period is associated with the
 cumulative value. The same reasoning for isolation level, 
 with the exception that the levels are averaged in the period.
 
 The isolation level data frame `dfl` is used to calculate
-the number of steps `N_TIME_STEPS` because its update
-is delayed when compared with the case values update.
+the number of steps `pandiso.count.time.steps` 
+because there is a delay in the data update of COVID-19 cases 
+and isolation levels. For these reason, the number of steps is based 
+on the variable that has the chance to have less values.
 
 ```{r}
+# Time step in days to be used along the R code.
+pandiso.time.step <- 5  # days
+
 # Cases are accumulated along the time
 pandiso.cases.are.accumulated <- TRUE
 is_cumul <- pandiso.cases.are.accumulated
@@ -286,19 +316,25 @@ rm(cases_dt, dates, dates_dt, i, inf, is_cumul, levels_dt, n, sup)
 
 # Stage 1 - Fitting
 
-Logistic function in the exponential form:
+The logistic function in the exponential form is used to fit the 
+observed number of COVID-19 cases. The parameters from fitting 
+are used in the estimation phase:
 
-$$𝑓(t)= {K \over 1 + ({ K-m \over m }) e^{−rt}}$$
+\begin{equation}
+\tag{1}
+f(t)= {K \over 1 + ({ K-m \over m }) e^{−rt}}
+\end{equation}
 
 
-where:
-t is a list of values representing the time steps;
-n_m is the sigmoid's midpoint;
-K is the the maximum value for n;
-r is the the logistic growth rate.
+\noindent where:
 
-The logistic function is used to fit the number of cases and the 
-fitting parameters are used in the estimation phase.
+$t$ - a list of values representing the time steps;
+
+$m$ - the sigmoid's midpoint;
+
+$K$ - the maximum value for f(t);
+
+$r$ - the the logistic growth rate.
 
 
 ```{r}
@@ -318,13 +354,11 @@ p <- ggplot(dfdt) + geom_point(aes(time, empirical)) +
      geom_line(aes(time, fit), size = 1, col = "gray50") +
      labs(title = paste("Fitting of empirical data using", pandiso.time.step, "days as time step"),
           x = "time", y= "accumulated cases") +
-    theme_minimal()
+    scale_x_continuous(breaks=seq(0, max(dfdt$time), 20)) +
+    theme_light()
 p
 pandiso.write.plot("fit", p)
 pandiso.fit.plot <- p
-
-# TODO: review plot title
-# TODO: rethink correlation method
 
 # Test the correlation of the empirical data and the model
 c <- cor.test(dfdt$empirical, dfdt$fit, method=c("pearson"))
@@ -334,26 +368,51 @@ rm(c, p)
 ```
 # Stage 2 - Estimating
 
-The estimation is performed after the calculation of $\lambda$
- is done by:
+The estimation is performed after the calculation of $\lambda$ using the equation 2:
+
+\begin{equation}
+\tag{2}
+ \lambda = r_{fit}\, \overline{i\,},
+ \end{equation}
  
- $$\lambda = r_{fit}\, \overline{i\ },$$
- 
-\noindent where $r_{fit}$ is the logistic growth factor obtained from 
-fitting and $\overline{i }$ is the average of all isolation 
+\noindent where: 
+
+$r_{fit}$ - the logistic growth rate obtained from 
+fitting;
+
+$\overline{i\,}$ - the mean of all isolation 
 level values.
 
-The $\lambda$ value is used to estimate the number of cases 
-$n(t+dt)$ using the logistic function in the exponential form, 
+The $\lambda$ is used to estimate the number of cases 
+$N(t)$ using the logistic function in the exponential form, 
 substituting the parameters by the fitted ones with the exception 
-of growth factor from previous time step that now depends on 
-isolation level of that step and it's calculated by
+of the growth rate from the previous time step that now 
+is considered as a dependent variable correlated with the 
+isolation level of that time step and it's calculated by
 
-$$r(t) = {\lambda\over i(t)}, $$
+\begin{equation}
+\tag{3}
+r(t-1) = {\lambda\over i(t-1)},
+\end{equation}
+
 and the logistic function calculates the current number of cases based 
 on the previous time step isolation level using:
 
-$$n(t+dt)= {K \over 1 + ({ K-n_m \over n_m }) e^{−r(t)\, t}}$$
+\begin{equation}
+\tag{4}
+N(t)= {K \over 1 + ({ K-N_m \over N_m }) e^{−r(t-1)\, (t)}}
+\end{equation}
+
+\noindent where:
+
+$K$ - maximum value reachable by $N$;
+
+$N_m$ - number of cases in the curve's midpoint;
+
+$r(t-1)$ - growth rate from the previous period;
+
+$t$ - time and $t\in \{2..t_{final}\}$.
+
 
 ```{r}
 library(ggplot2)
@@ -392,20 +451,22 @@ rm(estimated)
 dfm <- melt(data.frame(time = dfdt$time, empirical = dfdt$empirical, 
                        estimated = dfdt$estimated), id = "time")
 p1 <- ggplot(data = dfm, aes(x = time, y = value, color = variable)) + 
-      geom_point(pch = 19) +
+      geom_point(pch = 19, size = 1) +
       scale_color_manual(labels = unique(dfm$variable), values = c("black", "grey60")) + 
       labs(x = "", y = "accumulated cases", color = "", tag = "a)") +
-      theme_minimal() +
       theme(axis.title.x = element_blank(), axis.text.x = element_blank(),
             legend.position = c(0.1, 0.675),  
             legend.background = element_rect(fill = "white", color = "black"),
-            legend.title=element_blank())
+            legend.title=element_blank()) +
+      scale_x_continuous(breaks=seq(0, max(dfdt$time), 20)) +
+      theme_light()
 
 ## Subplot 2 - time x mean isolation level
 p2 <- ggplot(dfdt, aes(time, level)) +
-      geom_point(pch = 19, col = "gray40") +
+      geom_point(pch = 19, size = 1.125,  col = "gray40") +
       labs(x = "time", y = "mean isolation level", tag = "b)") + 
-      theme_minimal()
+      scale_x_continuous(breaks=seq(0, max(dfdt$time), 20)) +
+      theme_light()
      
 pandiso.estimation.plot <- (p1/p2)
 pandiso.estimation.plot
