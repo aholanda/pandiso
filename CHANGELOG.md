@@ -12,4 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove the line numbers in the file `preprint/main.tex`. The submission
 to arXiv returns an `incomplete` status because of that.
 - Submitted **again** to arXiv.
+
+## ["Unreleased"] 2021-09-17
+
 - First version of the project.
+- Submitted to arXiv.
