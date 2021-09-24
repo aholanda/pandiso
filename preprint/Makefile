@@ -8,7 +8,7 @@ endif
 IMGs := estimation.png fit.png logistic.png
 LATEX := xelatex
 
-all: main.tex main.bib macros.tex $(IMGs)
+all: main.tex main.bib macros.tex $(IMGs) clean
 	$(LATEX) $< && bibtex $(patsubst %.tex,%,$<) && $(LATEX) $< && $(LATEX) $<	
 
 main.pdf: main.tex macros.tex $(IMGs)
