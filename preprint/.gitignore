@@ -13,3 +13,17 @@ main.spl
 
 # arXiv file
 pandiso.zip
+
+# Figures
+logistic.pdf
+logistic.png
+fit.pdf
+fit.png
+estimation.pdf
+estimation.png
+
+# Elsevier
+elsdoc.pdf
+ecrc-template.tex
+ecrc.sty
+
