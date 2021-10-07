@@ -2,9 +2,6 @@
 # containing the original COVID-19 cases for São Paulo State, Brazil.
 dados_covid_sp.csv
 
-# results
-*.png
-
 # R
 *.RData
 *.Rhistory
@@ -17,6 +14,7 @@ pandiso*.md
 
 # VS Code
 .vscode
+*.bak
 
 # Latexmk
 *.synctex.gz
