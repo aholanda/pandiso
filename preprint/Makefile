@@ -6,7 +6,7 @@ else
 endif
 
 IMGs := estimation.png fit.png logistic.png
-LATEX := xelatex
+LATEX := pdflatex
 
 all: main.tex main.bib macros.tex $(IMGs) clean
 	$(LATEX) $< && bibtex $(patsubst %.tex,%,$<) && $(LATEX) $< && $(LATEX) $<	
