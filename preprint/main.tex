@@ -1,4 +1,6 @@
-\documentclass[review]{elsarticle}
+\documentclass[review,3p,times]{elsarticle}
+
+\usepackage{ecrc}
 
 \usepackage{lineno,hyperref}
 \modulolinenumbers[5]
@@ -7,45 +9,27 @@
     linkcolor=blue,
     filecolor=magenta,      
     urlcolor=cyan,
-    pdftitle={Overleaf Example},
+    pdftitle={Estimating the number of COVID-19 cases from population isolation level},
     pdfpagemode=FullScreen,
 }
 \usepackage{amsmath}
+\usepackage{amssymb}
 
-\journal{{\tt no Journal}}
+\def\thejournal{Physica A}
+\def\theauthor{Adriano J.\ Holanda}
+\journal{\thejournal}
+\journalname{\thejournal}
+\volume{00}
+\firstpage{1}
+\runauth{\theauthor}
+\jid{physa}
+\jnltitlelogo{\thejournal}
+\CopyrightLine{2021}{Published by Elsevier Ltd.}
 
-%%%%%%%%%%%%%%%%%%%%%%%
-%% Elsevier bibliography styles
-%%%%%%%%%%%%%%%%%%%%%%%
-%% To change the style, put a % in front of the second line of the current style and
-%% remove the % from the second line of the style you would like to use.
-%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Numbered
-%\bibliographystyle{model1-num-names}
-
-%% Numbered without titles
-%\bibliographystyle{model1a-num-names}
-
-%% Harvard
-%\bibliographystyle{model2-names.bst}\biboptions{authoryear}
-
-%% Vancouver numbered
-%\usepackage{numcompress}\bibliographystyle{model3-num-names}
-
-%% Vancouver name/year
-%\usepackage{numcompress}\bibliographystyle{model4-names}\biboptions{authoryear}
-
-%% APA style
-%\bibliographystyle{model5-names}\biboptions{authoryear}
-
-%% AMA style
-%\usepackage{numcompress}\bibliographystyle{model6-num-names}
-
-%% `Elsevier LaTeX' style
 \bibliographystyle{elsarticle-num}
-%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % This file is written by R to set some values to 
 % TeX macros.
 \input macros
@@ -53,6 +37,7 @@
 \def\sarscov{{SARS-CoV-2}}
 \def\eq#1{Equation~#1}
 \def\fig#1{Figure~#1}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
 
@@ -65,10 +50,8 @@
 \author[mymainaddress,mysecondaryaddress]{Adriano J.\ Holanda}
 \ead{aholanda@usp.br}
 
-\address[mymainaddress]{Department of Computing and Mathematics - Faculty of Philosophy, Science and Letters at Ribeir\~{a}o Preto - University of S\~{a}o Paulo, Ribeirão Preto, S\~{a}o Paulo, Brazil}
+\address[mymainaddress]{Department of Computing and Mathematics - Faculty of Philosophy, Science and Letters at Ribeir\~{a}o Preto - University of S\~{a}o Paulo, \hbox{3900 Bandeirantes Ave.},Ribeirão Preto, S\~{a}o Paulo, 14040-901, Brazil}
 \address[mysecondaryaddress]{Faculty ``Dr.\ Francisco Maeda'', Ituverava, S\~{a}o Paulo, Brazil}
-
-%\section{Front matter}
 
 \begin{abstract}
 We use the logistic function to estimate the number 
@@ -112,6 +95,7 @@ We conclude the method performs a data estimation with
 %\linenumbers
 
 \section{Introduction}
+\label{intro}
 
 SARS-CoV-2 is the virus that causes the infection 
 called coronavirus disease (\covid). 
@@ -127,7 +111,7 @@ of the current vaccines.
 Indeed, the minority of the population in some countries 
 is immunized against \sarscov, 
 % TODO: generalize this point of updated dependency
-e.g., only 35.8\% of the population  
+e.g., only 44.8\% of the population  
 is fully vaccinated in Brazil~\cite{MH2021}.
 The \sarscov\ variants and its low rate of immunization 
 impose the continuation of non-pharmacological approaches: 
@@ -156,6 +140,7 @@ of Brazil's GPD (Gross Domestic Product)
 (\url{https://www.ibge.gov.br/cidades-e-estados/sp.html}).
 
 \section{Methods}
+\label{methods}
 
 \subsection{Data preparation}
 
@@ -223,7 +208,7 @@ value for $n(t)$ not being reached.
 
 \begin{figure}
 \centering
-\includegraphics[scale=.4725]{logistic.png}
+\includegraphics[scale=.4725]{logistic.pdf}
 \caption{Hypothetical normalized logistic function -- 
 curve of \eq{\ref{eq:df:logistic}} with 
 $K=1.0$ and an arbitrary growth rate $r=0.04$; 
@@ -301,6 +286,7 @@ values  that increases the complexity
  of code and analysis.
 
 \section{Results}
+\label{results}
 
 \fig{\ref{fig:fit}} shows the accumulated 
 number of \covid\ cases per 
@@ -318,7 +304,7 @@ according to the parameters extracted from fitting.
 
 \begin{figure}[ht]
 \centering
-\includegraphics[scale=.545]{fit.png}
+\includegraphics[scale=.545]{fit.pdf}
 \caption{Curve of accumulated number of cases 
 at each time step $t$ and its fitting curve 
 using the logistic function (\eq{\ref{eq:exp:logistic}}) 
@@ -345,7 +331,7 @@ and calculate the estimated number of cases $N(t+1)$.
 
 \begin{figure}[ht]
 \centering
-\includegraphics[scale=.55]{estimation.png}
+\includegraphics[scale=.55]{estimation.pdf}
 \caption{a) Curve of accumulated number of cases 
 and the estimation using the logistic 
 function~(\eq{\ref{eq:exp:logistic:estimation}}) 
@@ -372,6 +358,7 @@ to encourage home-based working whenever possible,
 closure of schools and non-emergencies commerce\cite{Cruz2020}.
 
 \section{Discussion}
+\label{discussion}
 
 The proposed method to predict the number of infected individuals 
 using the current empirical data and the logistic function proved 
@@ -424,10 +411,17 @@ The properties may be the vaccination rate and the vaccines’ stock,
 number of ICU (Intensive Care Unit) beds in a hospital, 
 and even immunization loss growth rate.
 
-\section{Source code and data availability}
+\section*{Source code and data availability}
 R code and data required to reproduce the analyses 
 and Figures are available from
 \url{https://github.com/aholanda/pandiso}.
+
+\section*{Declaration of competing interest}
+We have no known 
+competing financial interests or personal 
+relationships that could have
+appeared to influence the work 
+reported in this paper.
 
 \bibliography{main}
 
