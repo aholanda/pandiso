@@ -1,33 +1,22 @@
-\documentclass[review,3p,times]{elsarticle}
+\documentclass[times]{article}
 
-\usepackage{ecrc}
-
+\usepackage{a4wide}
 \usepackage{lineno,hyperref}
 \modulolinenumbers[5]
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
-    filecolor=magenta,      
-    urlcolor=cyan,
+    filecolor=magenta,
+    citecolor=blue,  
+    urlcolor=blue,
     pdftitle={Estimating the number of COVID-19 cases from population isolation level},
     pdfpagemode=FullScreen,
 }
 \usepackage{amsmath}
 \usepackage{amssymb}
 
-\def\thejournal{Physica A}
+\def\thejournal{IJMBS}
 \def\theauthor{Adriano J.\ Holanda}
-\journal{\thejournal}
-\journalname{\thejournal}
-\volume{00}
-\firstpage{1}
-\runauth{\theauthor}
-\jid{physa}
-\jnltitlelogo{\thejournal}
-\CopyrightLine{2021}{Published by Elsevier Ltd.}
-
-
-\bibliographystyle{elsarticle-num}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % This file is written by R to set some values to 
@@ -41,18 +30,16 @@
 
 \begin{document}
 
-\begin{frontmatter}
-
 \title{Estimating the number of \covid\ cases from population isolation level}
-%\tnotetext[mytitlenote]{Source code and data are available in the Github repository \href{https://github.com/aholanda/pandiso}{pandiso}.}
+\author{\href{https://dcm.ffclrp.usp.br/~aholanda}{Adriano J.\ Holanda}$^{1,2}$\footnote{Contact: \href{mailto:aholanda@usp.br}{aholanda@usp.br}}\\
+\small $^1$Department of Computing and Mathematics\\
+\small Faculty of Philosophy, Science and Letters at Ribeir\~{a}o Preto \\
+\small University of S\~{a}o Paulo \\
+\small \hbox{3900 Bandeirantes Ave.},Ribeirão Preto, S\~{a}o Paulo, 14040-901, Brazil\\
+\small $^2$Faculty ``Dr.\ Francisco Maeda'', Ituverava, S\~{a}o Paulo, Brazil}
+\maketitle
 
-%% or include affiliations in footnotes:
-\author[mymainaddress,mysecondaryaddress]{Adriano J.\ Holanda}
-\ead{aholanda@usp.br}
-\ead[url]{https://dcm.ffclrp.usp.br/~aholanda}
-
-\address[mymainaddress]{Department of Computing and Mathematics - Faculty of Philosophy, Science and Letters at Ribeir\~{a}o Preto - University of S\~{a}o Paulo, \hbox{3900 Bandeirantes Ave.},Ribeirão Preto, S\~{a}o Paulo, 14040-901, Brazil}
-\address[mysecondaryaddress]{Faculty ``Dr.\ Francisco Maeda'', Ituverava, S\~{a}o Paulo, Brazil}
+% {}
 
 \begin{abstract}
 We use the logistic function to estimate the number 
@@ -87,11 +74,7 @@ We conclude the method performs a data estimation with
  high correlation with the empirical data.
 \end{abstract}
 
-\begin{keyword}
-\sarscov \sep \covid \sep logistic function \sep isolation
-\end{keyword}
-
-\end{frontmatter}
+\paragraph{Keywords:}~\sarscov, \covid, logistic function, isolation.
 
 %\linenumbers
 
@@ -417,13 +400,14 @@ R code and data required to reproduce the analyses
 and Figures are available from
 \url{https://github.com/aholanda/pandiso}.
 
-\section*{Declaration of competing interest}
-We have no known 
-competing financial interests or personal 
-relationships that could have
-appeared to influence the work 
-reported in this paper.
+%\section*{Declaration of competing interest}
+%We have no known 
+%competing financial interests or personal 
+%relationships that could have
+%appeared to influence the work 
+%reported in this paper.
 
+\bibliographystyle{plain}
 \bibliography{main}
 
 \end{document}
