@@ -24,7 +24,7 @@ library(testit)  # assert()
 pandiso.preprint.dir <- "preprint"
 
 ## File extension for plots
-pandiso.plot.ext <- ".pdf"
+pandiso.plot.ext <- ".png"
 
 pandiso.file.path <- function(fn) {
   # getwd() returns the current working directory.
