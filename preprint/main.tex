@@ -50,10 +50,10 @@ Each period is composed by a fixed date range in days
 which the social isolation is supposed to take
 effect over the virus spread in the next 
 date range.
-The sample is the \covid\ cases and 
+The sample is the COVID-19 cases and 
 social isolation level data from S\~{a}o Paulo State, Brazil.  
 The proposed method is divided into two stages: 
-1) The logistic function is fitted against \covid\ 
+1) The logistic function is fitted against COVID-19 
 empirical data to obtain the function parameters; 
 2) the function parameters, 
  except for the overall growth rate,
@@ -74,7 +74,7 @@ We conclude the method performs a data estimation with
  high correlation with the empirical data.
 \end{abstract}
 
-\paragraph{Keywords:}~\sarscov, \covid, logistic function, isolation.
+\paragraph{Keywords:}~\sarscov, COVID-19, logistic function, isolation.
 
 %\linenumbers
 
@@ -94,7 +94,6 @@ of the current vaccines.
  against all circulating variants~\cite{Harvey2021}. 
 Indeed, the minority of the population in some countries 
 is immunized against \sarscov, 
-% TODO: generalize this point of updated dependency
 e.g., only 44.8\% of the population  
 is fully vaccinated in Brazil~\cite{MH2021}.
 The \sarscov\ variants and its low rate of immunization 
@@ -162,14 +161,14 @@ the \sarscov\ spread behavior. We use the
 solution for
 
 \begin{equation}
-{dN \over dt} = r N (1 - {N \over K})
+{dN \over dt} = r N (1 - {N \over K}),
 \label{eq:df:logistic}
 \end{equation}
 
 \noindent that is
 
 \begin{equation}
-N(t) = {K \over {1- {(K-N_{m}) \over N} e^{-rt}}}
+N(t) = {K \over {1- {(K-N_{m}) \over N} e^{-rt}}},
 \label{eq:exp:logistic}
 \end{equation}
 
@@ -192,7 +191,7 @@ value for $n(t)$ not being reached.
 
 \begin{figure}
 \centering
-\includegraphics[scale=.4725]{logistic.pdf}
+\includegraphics[scale=.4725]{logistic.png}
 \caption{Hypothetical normalized logistic function -- 
 curve of \eq{\ref{eq:df:logistic}} with 
 $K=1.0$ and an arbitrary growth rate $r=0.04$; 
@@ -224,7 +223,7 @@ inversely proportional to the population isolation level $i$
 modulated by a constant $\lambda$:
 
 \begin{equation}
-r_{\text{fit}} = {\lambda /\, \overline{i\,}} \Rightarrow \lambda = r_{\text{fit}}\, \overline{i\,}
+r_{\text{fit}} = {\lambda /\, \overline{i\,}} \Rightarrow \lambda = r_{\text{fit}}\, \overline{i\,}.
 \label{eq:lambda}
 \end{equation}
 
@@ -239,7 +238,7 @@ and isolation level of each time interval $i(t)$
 are used to estimate the growth rate $r(t)$ using the formula:
 
 \begin{equation}
-r(t) = {\lambda\over i(t)}
+r(t) = {\lambda\over i(t)}.
 \label{eq:rt}
 \end{equation}
 
@@ -254,7 +253,7 @@ The estimated number of cases $N(t)$ is calculated using
  after a period of time $N(t)$:
 
 \begin{equation}
-N(t) = {K \over {1- {(K-N_{m}) \over N} e^{-r(t-1)\,t}}}
+N(t) = {K \over {1- {(K-N_{m}) \over N} e^{-r(t-1)\,t}}}.
 \label{eq:exp:logistic:estimation}
 \end{equation}
 
@@ -288,7 +287,7 @@ according to the parameters extracted from fitting.
 
 \begin{figure}[ht]
 \centering
-\includegraphics[scale=.545]{fit.pdf}
+\includegraphics[scale=.545]{fit.png}
 \caption{Curve of accumulated number of cases 
 at each time step $t$ and its fitting curve 
 using the logistic function (\eq{\ref{eq:exp:logistic}}) 
@@ -315,7 +314,7 @@ and calculate the estimated number of cases $N(t+1)$.
 
 \begin{figure}[ht]
 \centering
-\includegraphics[scale=.55]{estimation.pdf}
+\includegraphics[scale=.55]{estimation.png}
 \caption{a) Curve of accumulated number of cases 
 and the estimation using the logistic 
 function~(\eq{\ref{eq:exp:logistic:estimation}}) 
