@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## ["0.0.3"] 2021-10-11
+
+- 2nd replacement sent to arXvi.
+- pandiso.Rmd generates png figures again.
+- Convert preprint/main.tex to article class.
+- Preprint preprint/ijmbs.odf submitted to International
+Journal of Medical and Biomedical Studies.
+- Fix some references in preprint/main.bib.
+
 ## ["0.0.2"] 2021-10-11
 
 ### CHANGED
