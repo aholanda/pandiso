@@ -1,5 +1,7 @@
 # Pandemic Isolation
 
+Manuscript: [arXiv](http://arxiv.org/abs/2109.11518)
+
 Study to estimate the number of individuals infected by a virus based 
 on population isolation level. The test of the method was performed using 
 [São Paulo State, Brazil COVID](https://www.saopaulo.sp.gov.br/coronavirus/) 
