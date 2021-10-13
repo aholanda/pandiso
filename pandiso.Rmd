@@ -18,7 +18,9 @@ if `pandiso.update.preprint` is assigned to `TRUE`.
 
 
 ```{r}
-library(testit)  # assert()
+library(testit) # assert
+# Control verbosity
+VERBOSE = FALSE
 # SYSTEM variables and functions
 ## Directory where the manuscript (preprint) is located
 pandiso.preprint.dir <- "preprint"
@@ -33,7 +35,7 @@ pandiso.file.path <- function(fn) {
 }
 
 # Assign TRUE to update files in the preprint directory
-pandiso.update.preprint <- TRUE
+pandiso.update.preprint <- FALSE
 
 pandiso.write.plot <- function(file_prefix, plt) {
   assert("1st parameter is file prefix string", 
@@ -44,13 +46,18 @@ pandiso.write.plot <- function(file_prefix, plt) {
   fp <- pandiso.file.path(fn)
   
   if (pandiso.update.preprint == FALSE) {
-    print(paste("* Didn't write", fp))
-    print("* Assign 'TRUE' to variable 'pandiso.update.preprint.plots' to write it.")
+    if (VERBOSE) {
+      print(paste("* Didn't write", fp))
+      print("* Assign 'TRUE' to variable 'pandiso.update.preprint.plots' to write it.")
+    
+    }
     return(pandiso.update.preprint)
   }
   
   ggsave(fp)
-  print(paste("* Wrote", fp))
+  if (VERBOSE) {
+    print(paste("* Wrote", fp))
+  }
   return(pandiso.update.preprint)
 }
 ```
@@ -167,7 +174,7 @@ simplify the code and calculations. Another justification
 for the discrete values for time is that we are handling 
 approximations for the conditions studied.
 
-The value of `pandiso.time.step` (see \@ref{preface})
+The value of `pandiso.time.step` (see [Processing])
 was adopted after a set of tests 
 were performed to check which value causes 
  a better correlation in the curves 
@@ -252,7 +259,7 @@ dfl <- data.frame(date=as.Date(dates), level=values)
 rm(fn, fp, good, j, shift, tmp, tmps, values)
 ```
 
-## Processing
+## Processing {#processing}
 
 The time step in days which the data points are grouped 
 must be assigned to `pandiso.time.step` variable.
