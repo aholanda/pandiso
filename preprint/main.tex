@@ -161,14 +161,14 @@ the \sarscov\ spread behavior. We use the
 solution for
 
 \begin{equation}
-{dN \over dt} = r N (1 - {N \over K}),
+{dN \over dt} = r N (1 - \frac{N}{K}),
 \label{eq:df:logistic}
 \end{equation}
 
 \noindent that is
 
 \begin{equation}
-N(t) = {K \over {1- {(K-N_{m}) \over N} e^{-rt}}},
+	N(t) = \frac{K}{1- \frac{(K-N_{m})}{N_{m}} e^{-rt}},
 \label{eq:exp:logistic}
 \end{equation}
 
@@ -238,7 +238,7 @@ and isolation level of each time interval $i(t)$
 are used to estimate the growth rate $r(t)$ using the formula:
 
 \begin{equation}
-r(t) = {\lambda\over i(t)}.
+r(t) = \frac{\lambda}{i(t)}.
 \label{eq:rt}
 \end{equation}
 
@@ -253,7 +253,7 @@ The estimated number of cases $N(t)$ is calculated using
  after a period of time $N(t)$:
 
 \begin{equation}
-N(t) = {K \over {1- {(K-N_{m}) \over N} e^{-r(t-1)\,t}}}.
+N(t) = \frac{K}{1- \frac{(K-N_{m})}{N_{m}} e^{-r(t-1)\,t}}.
 \label{eq:exp:logistic:estimation}
 \end{equation}
 
