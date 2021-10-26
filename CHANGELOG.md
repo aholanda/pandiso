@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## ["0.0.5"] 2021-10-26
+
+# CHANGED
+- Accepted for publication by International Journal of Medical and Biomedical Studies (IJMBS);
+- Update data;
+- 3rd version sent to [arXiv](https://arxiv.org/abs/2109.11518).
+
 ## ["0.0.4"] 2021-10-18
 
 ### BUG FIX
