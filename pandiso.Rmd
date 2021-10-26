@@ -35,7 +35,7 @@ pandiso.file.path <- function(fn) {
 }
 
 # Assign TRUE to update files in the preprint directory
-pandiso.update.preprint <- FALSE
+pandiso.update.preprint <- TRUE
 
 pandiso.write.plot <- function(file_prefix, plt) {
   assert("1st parameter is file prefix string", 
